@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Link, useNavigate, Navigate } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import api from '../api';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Link, useNavigate, Navigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import api from "../api";
 
 export default function Login() {
-  const [email, setEmail]             = useState('');
-  const [password, setPassword]       = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError]             = useState('');
+  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
@@ -18,18 +18,21 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsSubmitting(true);
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post("/auth/login", { email, password });
       login(response.data.token, {
         _id: response.data._id,
         name: response.data.name,
         email: response.data.email,
       });
-      navigate('/app');
+      navigate("/app");
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Check your credentials and try again.');
+      setError(
+        err.response?.data?.message ||
+          "Login failed. Check your credentials and try again.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -132,10 +135,11 @@ export default function Login() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          src="/images/auth_side_image.png" 
-          alt="Abstract 3D finance illustration" 
-          className="w-full h-full object-cover rounded-3xl shadow-2xl"
+          src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop" 
+          alt="Abstract dark workspace" 
+          className="w-full h-full object-cover rounded-3xl shadow-2xl grayscale-[20%]"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-bg/80 via-transparent to-transparent pointer-events-none" />
         <div className="absolute bottom-24 left-24 right-24 p-8 glass border border-white/10 rounded-2xl backdrop-blur-xl">
           <p className="text-lg font-medium text-white/90 leading-relaxed mb-4">
             "Finally, a dashboard that gives me complete clarity on where my money goes, without the clutter."
