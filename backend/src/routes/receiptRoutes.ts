@@ -1,10 +1,24 @@
-import express from 'express';
-import { getReceipts, createReceipt, getReceiptById, deleteReceipt } from '../controllers/receiptController';
+import { Router } from 'express';
+import {
+  createReceipt,
+  getReceipts,
+  getReceiptById,
+  deleteReceipt,
+} from '../controllers/receiptController';
 import { protect } from '../middleware/authMiddleware';
+import { upload } from '../middleware/uploadMiddleware';
 
-const router = express.Router();
+const router = Router();
 
-router.route('/').get(protect, getReceipts).post(protect, createReceipt);
-router.route('/:id').get(protect, getReceiptById).delete(protect, deleteReceipt);
+// All receipt routes require authentication
+router.use(protect);
+
+router.route('/')
+  .get(getReceipts)
+  .post(upload.single('receiptImage'), createReceipt);
+
+router.route('/:id')
+  .get(getReceiptById)
+  .delete(deleteReceipt);
 
 export default router;

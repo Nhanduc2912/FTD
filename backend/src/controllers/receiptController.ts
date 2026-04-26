@@ -12,25 +12,35 @@ export const getReceipts = async (req: AuthRequest, res: Response): Promise<void
   }
 };
 
-// Create a new receipt
+// @desc    Create a new receipt
+// @route   POST /api/receipts
+// @access  Private
 export const createReceipt = async (req: AuthRequest, res: Response): Promise<void> => {
-  const { storeName, purchaseDate, totalAmount, imageUrl, expiryDate, notes } = req.body;
-
   try {
-    const receipt = new Receipt({
+    const { storeName, purchaseDate, totalAmount, expiryDate, notes } = req.body;
+
+    // Check if file is uploaded
+    if (!req.file) {
+      res.status(400).json({ message: 'Receipt image is required' });
+      return;
+    }
+
+    const imageUrl = `/uploads/receipts/${req.file.filename}`;
+
+    const receipt = await Receipt.create({
       userId: req.user!._id,
       storeName,
       purchaseDate,
-      totalAmount,
+      totalAmount: Number(totalAmount),
       imageUrl,
       expiryDate,
       notes,
     });
 
-    const createdReceipt = await receipt.save();
-    res.status(201).json(createdReceipt);
-  } catch (error) {
-    res.status(500).json({ message: 'Server Error', error });
+    res.status(201).json(receipt);
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error creating receipt' });
   }
 };
 
