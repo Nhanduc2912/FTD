@@ -9,12 +9,17 @@
   --color-text: #f3f4f6;
   --color-text-muted: #9ca3af;
   --color-border: #2e303a;
-  
-  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  --font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
 }
 
+/* ── Base ──────────────────────────────────────────────────── */
 :root {
   color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -22,11 +27,60 @@ body {
   color: var(--color-text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Utilities for Glassmorphism */
+/* ── Touch improvements ─────────────────────────────────────── */
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Focus visible baseline ─────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Glassmorphism ──────────────────────────────────────────── */
 .glass {
   background: rgba(22, 23, 29, 0.7);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* ── Reduced-motion support ─────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Landing page gradient text ─────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #aa3bff 0%, #6366f1 50%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Landing hero glow ──────────────────────────────────────── */
+.hero-glow {
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(170, 59, 255, 0.15) 0%, transparent 70%);
+}
+
+/* ── Card hover lift ────────────────────────────────────────── */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(170, 59, 255, 0.1);
 }
