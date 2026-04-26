@@ -1,22 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Scissors, Plus, AlertCircle } from 'lucide-react';
-
-const DUMMY_SUBS = [
-  { id: 1, name: 'Netflix Premium', cost: '$15.99', cycle: 'Monthly', nextBill: 'Tomorrow', daysLeft: 1 },
-  { id: 2, name: 'Adobe CC', cost: '$29.99', cycle: 'Monthly', nextBill: 'In 3 days', daysLeft: 3 },
-  { id: 3, name: 'Amazon Prime', cost: '$139.00', cycle: 'Yearly', nextBill: 'In 45 days', daysLeft: 45 },
-  { id: 4, name: 'Spotify Premium', cost: '$10.99', cycle: 'Monthly', nextBill: 'In 12 days', daysLeft: 12 },
-];
+import api from '../api';
 
 export default function Subscriptions() {
-  const [subs, setSubs] = useState(DUMMY_SUBS);
+  const [subs, setSubs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const handleGuillotine = (id: number) => {
-    // Slash animation triggers, then remove
-    setTimeout(() => {
-      setSubs((prev) => prev.filter((s) => s.id !== id));
-    }, 600);
+  useEffect(() => {
+    fetchSubs();
+  }, []);
+
+  const fetchSubs = async () => {
+    try {
+      const response = await api.get('/subscriptions');
+      setSubs(response.data);
+    } catch (err: any) {
+      setError('Failed to load subscriptions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGuillotine = async (id: string) => {
+    try {
+      await api.delete(`/subscriptions/${id}`);
+      setSubs((prev) => prev.filter((s) => s._id !== id));
+    } catch (err) {
+      alert('Failed to cut subscription!');
+    }
   };
 
   return (
@@ -31,13 +44,21 @@ export default function Subscriptions() {
         </button>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AnimatePresence>
-          {subs.map((sub) => (
-            <SubscriptionCard key={sub.id} sub={sub} onCut={handleGuillotine} />
-          ))}
-        </AnimatePresence>
-      </div>
+      {loading ? (
+        <div className="text-text-muted">Loading subscriptions...</div>
+      ) : error ? (
+        <div className="text-red-400">{error}</div>
+      ) : subs.length === 0 ? (
+        <div className="text-text-muted">No active subscriptions found.</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <AnimatePresence>
+            {subs.map((sub) => (
+              <SubscriptionCard key={sub._id} sub={sub} onCut={handleGuillotine} />
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }
@@ -47,10 +68,19 @@ function SubscriptionCard({ sub, onCut }: any) {
 
   const handleCutClick = () => {
     setIsSlashing(true);
-    onCut(sub.id);
+    // Timeout to allow animation to play before actual delete
+    setTimeout(() => {
+      onCut(sub._id);
+    }, 500);
   };
 
-  const isUrgent = sub.daysLeft <= 3;
+  // Basic diff calculation for daysLeft
+  const nextBillDate = new Date(sub.nextBillingDate);
+  const today = new Date();
+  const diffTime = Math.abs(nextBillDate.getTime() - today.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const isUrgent = diffDays <= 3;
+  const formattedDate = nextBillDate.toLocaleDateString();
 
   return (
     <motion.div
@@ -88,9 +118,9 @@ function SubscriptionCard({ sub, onCut }: any) {
 
       <div className="flex justify-between items-end mt-6">
         <div>
-          <p className="text-3xl font-bold">{sub.cost}</p>
+          <p className="text-3xl font-bold">${sub.amount.toFixed(2)}</p>
           <p className={`text-sm mt-1 flex items-center gap-1 ${isUrgent ? 'text-red-400 font-medium' : 'text-text-muted'}`}>
-            {isUrgent && <AlertCircle size={14} />} Renews {sub.nextBill}
+            {isUrgent && <AlertCircle size={14} />} Renews {formattedDate}
           </p>
         </div>
         

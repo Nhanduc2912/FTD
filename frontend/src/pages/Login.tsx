@@ -1,17 +1,35 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import api from '../api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
 
-  const handleLogin = (e: React.FormEvent) => {
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual API login here
-    console.log('Login attempt', { email, password });
-    navigate('/');
+    setError('');
+    setIsSubmitting(true);
+    
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      login(response.data.token, { _id: response.data._id, name: response.data.name, email: response.data.email });
+      navigate('/');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to login');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -35,6 +53,7 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
+          {error && <div className="p-3 mb-4 rounded-xl bg-red-500/10 border border-red-500/50 text-red-400 text-sm">{error}</div>}
           <div>
             <label className="block text-sm font-medium text-text-muted mb-2">Email Address</label>
             <input
@@ -61,9 +80,10 @@ export default function Login() {
 
           <button
             type="submit"
-            className="w-full bg-primary hover:bg-primary-dark text-white font-semibold rounded-xl px-4 py-3 transition-colors shadow-lg shadow-primary/20"
+            disabled={isSubmitting}
+            className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-semibold rounded-xl px-4 py-3 transition-colors shadow-lg shadow-primary/20"
           >
-            Sign In
+            {isSubmitting ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 

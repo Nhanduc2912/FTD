@@ -1,15 +1,25 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import { Receipt, CreditCard, LogOut, LayoutDashboard } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 export default function MainLayout() {
   const location = useLocation();
+  const { isAuthenticated, isLoading, logout } = useAuth();
 
   const navItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Receipts', path: '/receipts', icon: Receipt },
     { name: 'Subscriptions', path: '/subscriptions', icon: CreditCard },
   ];
+
+  if (isLoading) {
+    return <div className="h-screen w-full flex items-center justify-center bg-surface text-text">Loading...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="flex h-screen w-full bg-surface">
@@ -51,7 +61,10 @@ export default function MainLayout() {
         </nav>
 
         <div className="p-4 border-t border-border">
-          <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-text-muted hover:text-white hover:bg-surface-hover transition-colors">
+          <button 
+            onClick={logout}
+            className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-text-muted hover:text-white hover:bg-surface-hover transition-colors"
+          >
             <LogOut size={20} />
             <span className="font-medium">Logout</span>
           </button>

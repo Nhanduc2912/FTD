@@ -1,18 +1,36 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import api from '../api';
 
 export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
 
-  const handleRegister = (e: React.FormEvent) => {
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual API registration here
-    console.log('Register attempt', { name, email, password });
-    navigate('/');
+    setError('');
+    setIsSubmitting(true);
+    
+    try {
+      const response = await api.post('/auth/register', { name, email, password });
+      login(response.data.token, { _id: response.data._id, name: response.data.name, email: response.data.email });
+      navigate('/');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to register');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -36,6 +54,7 @@ export default function Register() {
         </div>
 
         <form onSubmit={handleRegister} className="space-y-5">
+          {error && <div className="p-3 mb-4 rounded-xl bg-red-500/10 border border-red-500/50 text-red-400 text-sm">{error}</div>}
           <div>
             <label className="block text-sm font-medium text-text-muted mb-2">Full Name</label>
             <input
@@ -74,9 +93,10 @@ export default function Register() {
 
           <button
             type="submit"
-            className="w-full bg-primary hover:bg-primary-dark text-white font-semibold rounded-xl px-4 py-3 mt-4 transition-colors shadow-lg shadow-primary/20"
+            disabled={isSubmitting}
+            className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-semibold rounded-xl px-4 py-3 mt-4 transition-colors shadow-lg shadow-primary/20"
           >
-            Create Account
+            {isSubmitting ? 'Creating...' : 'Create Account'}
           </button>
         </form>
 

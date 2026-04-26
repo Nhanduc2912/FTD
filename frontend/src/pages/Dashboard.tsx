@@ -1,7 +1,66 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CreditCard, Receipt, AlertCircle } from 'lucide-react';
+import api from '../api';
 
 export default function Dashboard() {
+  const [stats, setStats] = useState({
+    totalSubs: 0,
+    subsCost: 0,
+    totalReceipts: 0,
+    receiptsAmount: 0,
+    expiringSubs: 0,
+    expiringReceipts: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [subsRes, receiptsRes] = await Promise.all([
+          api.get('/subscriptions'),
+          api.get('/receipts')
+        ]);
+
+        const subs = subsRes.data;
+        const receipts = receiptsRes.data;
+
+        // Calculate Stats
+        const subsCost = subs.reduce((acc: number, sub: any) => acc + sub.amount, 0);
+        
+        const today = new Date();
+        const expiringSubs = subs.filter((sub: any) => {
+          const diffDays = Math.ceil((new Date(sub.nextBillingDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+          return diffDays >= 0 && diffDays <= 7;
+        }).length;
+
+        const receiptsAmount = receipts.reduce((acc: number, r: any) => acc + r.totalAmount, 0);
+        const expiringReceipts = receipts.filter((r: any) => {
+           const diffDays = Math.ceil((new Date(r.warrantyExpiryDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+           return diffDays >= 0 && diffDays <= 30;
+        }).length;
+
+        setStats({
+          totalSubs: subs.length,
+          subsCost,
+          totalReceipts: receipts.length,
+          receiptsAmount,
+          expiringSubs,
+          expiringReceipts,
+        });
+
+      } catch (err) {
+        console.error('Failed to load dashboard data', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (loading) return <div className="text-text-muted">Loading dashboard...</div>;
+
   return (
     <div className="space-y-8">
       <header>
@@ -12,24 +71,24 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard 
           title="Active Subscriptions" 
-          value="4" 
-          amount="$45.99/mo" 
+          value={stats.totalSubs.toString()} 
+          amount={`$${stats.subsCost.toFixed(2)} total/cycle`} 
           icon={CreditCard} 
-          trend="+1 this month"
+          trend={`${stats.expiringSubs} renewing soon`}
         />
         <StatCard 
           title="Total Receipts" 
-          value="128" 
-          amount="$1,240.00" 
+          value={stats.totalReceipts.toString()} 
+          amount={`$${stats.receiptsAmount.toFixed(2)}`} 
           icon={Receipt} 
-          trend="Saved $50 in returns"
+          trend={`${stats.expiringReceipts} warranties expiring soon`}
         />
         <StatCard 
-          title="Expiring Soon" 
-          value="2" 
-          amount="Action needed" 
+          title="Action Needed" 
+          value={(stats.expiringSubs + stats.expiringReceipts).toString()} 
+          amount="Expiring items" 
           icon={AlertCircle} 
-          trend="Within 7 days"
+          trend="Review immediately"
           highlight
         />
       </div>
