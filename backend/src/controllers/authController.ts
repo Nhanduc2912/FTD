@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
+import { AuthRequest } from '../middleware/authMiddleware';
 
 const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret', {
@@ -9,30 +10,42 @@ const generateToken = (id: string) => {
   });
 };
 
+// Simple email regex validation
+const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
 export const registerUser = async (req: Request, res: Response): Promise<void> => {
   const { email, password, name } = req.body;
 
-  if (!email || !password) {
-    res.status(400).json({ message: 'Please provide email and password' });
+  // ─── Validation ───────────────────────────────────────
+  if (!email || !password || !name) {
+    res.status(400).json({ message: 'Please provide name, email, and password' });
     return;
   }
+  if (!isValidEmail(email)) {
+    res.status(400).json({ message: 'Please provide a valid email address' });
+    return;
+  }
+  if (password.length < 6) {
+    res.status(400).json({ message: 'Password must be at least 6 characters' });
+    return;
+  }
+  if (name.trim().length < 2) {
+    res.status(400).json({ message: 'Name must be at least 2 characters' });
+    return;
+  }
+  // ──────────────────────────────────────────────────────
 
   try {
-    const userExists = await User.findOne({ email });
-
+    const userExists = await User.findOne({ email: email.toLowerCase() });
     if (userExists) {
-      res.status(400).json({ message: 'User already exists' });
+      res.status(400).json({ message: 'User already exists with this email' });
       return;
     }
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    const user = await User.create({
-      email,
-      passwordHash,
-      name,
-    });
+    const user = await User.create({ email: email.toLowerCase(), passwordHash, name: name.trim() });
 
     if (user) {
       res.status(201).json({
@@ -58,8 +71,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const user = await User.findOne({ email });
-
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (user && (await bcrypt.compare(password, user.passwordHash))) {
       res.json({
         _id: user._id,
@@ -70,6 +82,22 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
     }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+// @desc  Get current logged-in user profile
+// @route GET /api/auth/me
+// @access Private
+export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const user = await User.findById(req.user!._id).select('-passwordHash');
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+    res.json({ _id: user._id, email: user.email, name: user.name });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }

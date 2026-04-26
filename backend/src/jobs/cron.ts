@@ -58,7 +58,7 @@ export const startCronJobs = () => {
         
         if (subs.length > 0) {
           html += `<h3>🔄 Subscriptions Renewing Soon:</h3><ul>`;
-          subs.forEach((s: any) => html += `<li>${s.name} - $${s.amount} on ${new Date(s.nextBillingDate).toLocaleDateString()}</li>`);
+          subs.forEach((s: any) => html += `<li>${s.serviceName} - $${s.cost} on ${new Date(s.nextBillingDate).toLocaleDateString()}</li>`);
           html += `</ul>`;
         }
 

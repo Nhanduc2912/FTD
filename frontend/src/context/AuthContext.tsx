@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import api from '../api';
 
 interface User {
   _id: string;
@@ -23,17 +24,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // If we have a token but no user, we might want to fetch user profile
-    // For now, our login returns both token and user, but on refresh user is lost.
-    // Let's rely on the token for isAuthenticated, but ideally we'd add a /api/auth/me endpoint.
-    // For simplicity, we'll just check if token exists.
-    if (token) {
-      // In a real app, you'd fetch the user profile here using the token
-      setIsLoading(false);
-    } else {
-      setIsLoading(false);
-    }
-  }, [token]);
+    // On mount, if a token exists, verify it and restore user state (fixes the page-refresh bug)
+    const restoreSession = async () => {
+      const storedToken = localStorage.getItem('token');
+      if (!storedToken) {
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const response = await api.get('/auth/me');
+        setUser(response.data);
+        setToken(storedToken);
+      } catch {
+        // Token is invalid or expired – clean up
+        localStorage.removeItem('token');
+        setToken(null);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    restoreSession();
+  }, []);
 
   const login = (newToken: string, userData: User) => {
     localStorage.setItem('token', newToken);

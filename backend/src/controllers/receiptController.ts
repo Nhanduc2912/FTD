@@ -1,4 +1,6 @@
 import { Response } from 'express';
+import fs from 'fs';
+import path from 'path';
 import { AuthRequest } from '../middleware/authMiddleware';
 import { Receipt } from '../models/Receipt';
 
@@ -12,29 +14,55 @@ export const getReceipts = async (req: AuthRequest, res: Response): Promise<void
   }
 };
 
-// @desc    Create a new receipt
-// @route   POST /api/receipts
-// @access  Private
+// @desc  Create a new receipt
+// @route POST /api/receipts
+// @access Private
 export const createReceipt = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { storeName, purchaseDate, totalAmount, expiryDate, notes } = req.body;
 
-    // Check if file is uploaded
+    // ─── Validation ────────────────────────────────────────
+    if (!storeName || storeName.trim().length < 2) {
+      res.status(400).json({ message: 'Store name is required (min 2 characters)' });
+      return;
+    }
+    if (!purchaseDate || isNaN(Date.parse(purchaseDate))) {
+      res.status(400).json({ message: 'A valid purchase date is required' });
+      return;
+    }
+    if (purchaseDate && new Date(purchaseDate) > new Date()) {
+      res.status(400).json({ message: 'Purchase date cannot be in the future' });
+      return;
+    }
+    const amount = Number(totalAmount);
+    if (isNaN(amount) || amount < 0) {
+      res.status(400).json({ message: 'Total amount must be a valid non-negative number' });
+      return;
+    }
+    if (expiryDate && isNaN(Date.parse(expiryDate))) {
+      res.status(400).json({ message: 'Warranty expiry date is invalid' });
+      return;
+    }
+    if (expiryDate && new Date(expiryDate) < new Date(purchaseDate)) {
+      res.status(400).json({ message: 'Warranty expiry date cannot be before purchase date' });
+      return;
+    }
     if (!req.file) {
       res.status(400).json({ message: 'Receipt image is required' });
       return;
     }
+    // ──────────────────────────────────────────────────────
 
     const imageUrl = `/uploads/receipts/${req.file.filename}`;
 
     const receipt = await Receipt.create({
       userId: req.user!._id,
-      storeName,
+      storeName: storeName.trim(),
       purchaseDate,
-      totalAmount: Number(totalAmount),
+      totalAmount: amount,
       imageUrl,
-      expiryDate,
-      notes,
+      expiryDate: expiryDate || undefined,
+      notes: notes?.trim(),
     });
 
     res.status(201).json(receipt);
@@ -48,7 +76,6 @@ export const createReceipt = async (req: AuthRequest, res: Response): Promise<vo
 export const getReceiptById = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const receipt = await Receipt.findById(req.params.id);
-
     if (receipt && receipt.userId.toString() === req.user?._id.toString()) {
       res.json(receipt);
     } else {
@@ -59,12 +86,20 @@ export const getReceiptById = async (req: AuthRequest, res: Response): Promise<v
   }
 };
 
-// Delete a receipt
+// Delete a receipt (also removes the image file from disk)
 export const deleteReceipt = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const receipt = await Receipt.findById(req.params.id);
 
     if (receipt && receipt.userId.toString() === req.user?._id.toString()) {
+      // ─── Clean up orphaned image file ──────────────────
+      if (receipt.imageUrl) {
+        const filePath = path.join(__dirname, '../../', receipt.imageUrl);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+      // ────────────────────────────────────────────────────
       await receipt.deleteOne();
       res.json({ message: 'Receipt removed' });
     } else {

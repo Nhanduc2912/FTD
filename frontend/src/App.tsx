@@ -5,19 +5,23 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Subscriptions from './pages/Subscriptions';
 import Receipts from './pages/Receipts';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      
+
       {/* Protected Routes (Main Layout) */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/receipts" element={<Receipts />} />
         <Route path="/subscriptions" element={<Subscriptions />} />
       </Route>
+
+      {/* 404 Catch-all */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
