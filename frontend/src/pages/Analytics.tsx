@@ -94,11 +94,12 @@ export default function Analytics() {
         const [subsRes, rcpRes, expRes] = await Promise.all([
           api.get('/subscriptions'),
           api.get('/receipts'),
-          api.get('/expenses'),
+          api.get('/expenses?all=true'),
         ]);
-        setSubs(subsRes.data);
-        setReceipts(rcpRes.data);
-        setExpenses(expRes.data);
+        // All endpoints return paginated {data, page, totalPages, total} — extract array
+        setSubs(Array.isArray(subsRes.data) ? subsRes.data : (subsRes.data.data ?? []));
+        setReceipts(Array.isArray(rcpRes.data) ? rcpRes.data : (rcpRes.data.data ?? []));
+        setExpenses(Array.isArray(expRes.data) ? expRes.data : (expRes.data.data ?? []));
       } catch {
         setError(t('common.error'));
       } finally {

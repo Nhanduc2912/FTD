@@ -32,8 +32,9 @@ export function useNotifications() {
     const load = async () => {
       try {
         const [s, r] = await Promise.all([api.get('/subscriptions'), api.get('/receipts')]);
-        setSubs(s.data);
-        setReceipts(r.data);
+        // API returns paginated {data, page, totalPages, total} — extract array
+        setSubs(Array.isArray(s.data) ? s.data : (s.data.data ?? []));
+        setReceipts(Array.isArray(r.data) ? r.data : (r.data.data ?? []));
       } catch { /* silent */ }
     };
     load();
