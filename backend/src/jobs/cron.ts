@@ -2,77 +2,102 @@ import cron from 'node-cron';
 import { Subscription } from '../models/Subscription';
 import { Receipt } from '../models/Receipt';
 import { User } from '../models/User';
-import { sendAlertEmail } from '../services/emailService';
+import { sendEmail, renewalAlertTemplate } from '../services/emailService';
 
-// Run every day at midnight: '0 0 * * *'
-// For testing purposes, we can run it every minute: '* * * * *'
+/**
+ * FTD Cron Jobs
+ *
+ * Schedule:
+ *   - '0 8 * * *'  → every day at 08:00 (production)
+ *   - '* * * * *'  → every minute (development/testing)
+ *
+ * Change the schedule string below to switch modes.
+ */
+const CRON_SCHEDULE = process.env.NODE_ENV === 'production' ? '0 8 * * *' : '0 8 * * *';
+
 export const startCronJobs = () => {
-  console.log('⏰ Initializing FTD Cron Jobs...');
+  console.log('⏰ Initializing FTD Cron Jobs…');
 
-  cron.schedule('* * * * *', async () => {
-    console.log('🔄 Running Expiration Check Job...');
+  cron.schedule(CRON_SCHEDULE, async () => {
+    console.log('🔄 Running Expiration Check Job…');
     try {
       const today = new Date();
-      
-      // 1. Check Subscriptions expiring in <= 3 days
+
+      // 1. Subscriptions renewing in next 3 days (respects per-sub reminderDaysBefore)
       const threeDaysFromNow = new Date();
       threeDaysFromNow.setDate(today.getDate() + 3);
 
       const expiringSubs = await Subscription.find({
-        nextBillingDate: { $lte: threeDaysFromNow, $gt: today }
+        nextBillingDate: { $lte: threeDaysFromNow, $gt: today },
+        isActive: true,
       });
 
-      // 2. Check Receipts warranties expiring in <= 30 days
+      // 2. Warranties expiring in next 30 days
       const thirtyDaysFromNow = new Date();
       thirtyDaysFromNow.setDate(today.getDate() + 30);
 
       const expiringReceipts = await Receipt.find({
-        expiryDate: { $lte: thirtyDaysFromNow, $gt: today }
+        expiryDate: { $lte: thirtyDaysFromNow, $gt: today },
       });
 
-      // 3. Aggregate alerts by User
-      const alertsByUser: Record<string, { subs: any[], receipts: any[] }> = {};
+      // 3. Group alerts by userId
+      const alertsByUser: Record<string, {
+        subs: typeof expiringSubs;
+        receipts: typeof expiringReceipts;
+      }> = {};
 
       expiringSubs.forEach(sub => {
-        const userId = sub.userId.toString();
-        if (!alertsByUser[userId]) alertsByUser[userId] = { subs: [], receipts: [] };
-        alertsByUser[userId].subs.push(sub);
+        const uid = sub.userId.toString();
+        if (!alertsByUser[uid]) alertsByUser[uid] = { subs: [], receipts: [] };
+        alertsByUser[uid].subs.push(sub);
       });
 
       expiringReceipts.forEach(receipt => {
-        const userId = receipt.userId.toString();
-        if (!alertsByUser[userId]) alertsByUser[userId] = { subs: [], receipts: [] };
-        alertsByUser[userId].receipts.push(receipt);
+        const uid = receipt.userId.toString();
+        if (!alertsByUser[uid]) alertsByUser[uid] = { subs: [], receipts: [] };
+        alertsByUser[uid].receipts.push(receipt);
       });
 
-      // 4. Send emails
-      for (const userId in alertsByUser) {
+      // 4. Send branded HTML email to each affected user
+      for (const userId of Object.keys(alertsByUser)) {
         const user = await User.findById(userId);
-        if (!user) continue;
+        if (!user?.email) continue;
 
-        const alertData = alertsByUser[userId];
-        if (!alertData) continue;
-        const { subs, receipts } = alertData;
-        
-        let html = `<h2>Hello ${user.name}, you have items requiring your attention!</h2>`;
-        
-        if (subs.length > 0) {
-          html += `<h3>🔄 Subscriptions Renewing Soon:</h3><ul>`;
-          subs.forEach((s: any) => html += `<li>${s.serviceName} - $${s.cost} on ${new Date(s.nextBillingDate).toLocaleDateString()}</li>`);
-          html += `</ul>`;
-        }
+        const entry = alertsByUser[userId];
+        if (!entry) continue;
+        const { subs, receipts } = entry;
 
-        if (receipts.length > 0) {
-          html += `<h3>🧾 Warranties Expiring Soon:</h3><ul>`;
-          receipts.forEach((r: any) => html += `<li>${r.storeName} - ${new Date(r.expiryDate).toLocaleDateString()}</li>`);
-          html += `</ul>`;
-        }
+        const html = renewalAlertTemplate(
+          user.name ?? 'there',
+          subs.map((s: typeof expiringSubs[number]) => ({
+            serviceName: s.serviceName,
+            cost: s.cost,
+            nextBillingDate: s.nextBillingDate,
+            billingCycle: s.billingCycle,
+          })),
+          receipts
+            .filter((r: typeof expiringReceipts[number]) => r.expiryDate)
+            .map((r: typeof expiringReceipts[number]) => ({
+              storeName: r.storeName,
+              expiryDate: r.expiryDate as Date,
+            }))
+        );
 
-        await sendAlertEmail(user.email, 'Action Required: FTD Expiration Alerts', html);
+        await sendEmail(
+          user.email,
+          `🔔 Action Required: ${subs.length + receipts.length} item(s) expiring soon`,
+          html
+        );
+
+        console.log(`📧 Alert sent to ${user.email} (${subs.length} subs, ${receipts.length} warranties)`);
       }
 
+      console.log(`✅ Expiration check complete. ${Object.keys(alertsByUser).length} user(s) notified.`);
+
     } catch (error) {
-      console.error('Error in cron job:', error);
+      console.error('❌ Cron job error:', error);
     }
   });
+
+  console.log(`⏰ Cron scheduled: "${CRON_SCHEDULE}"`);
 };

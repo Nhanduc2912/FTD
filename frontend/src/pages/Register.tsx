@@ -1,14 +1,16 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
 
 export default function Register() {
-  const [name, setName]         = useState('');
-  const [email, setEmail]       = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError]       = useState('');
+  const [name, setName]               = useState('');
+  const [email, setEmail]             = useState('');
+  const [password, setPassword]       = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError]             = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
@@ -101,18 +103,28 @@ export default function Register() {
 
           <div>
             <label htmlFor="reg-password" className="block text-sm font-medium text-text-muted mb-2">Password</label>
-            <input
-              id="reg-password"
-              type="password"
-              name="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="w-full bg-surface-hover border border-border rounded-xl px-4 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-[border-color,box-shadow]"
-              placeholder="At least 6 characters…"
-              minLength={6}
-              required
-            />
+            <div className="relative">
+              <input
+                id="reg-password"
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                autoComplete="new-password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="w-full bg-surface-hover border border-border rounded-xl px-4 py-3 pr-11 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-[border-color,box-shadow]"
+                placeholder="At least 6 characters…"
+                minLength={6}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(v => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors p-1"
+              >
+                {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+              </button>
+            </div>
           </div>
 
           <button

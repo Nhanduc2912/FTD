@@ -1,6 +1,9 @@
-﻿import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
-import { Receipt, CreditCard, LayoutDashboard, LogOut, BarChart2, Settings, Bell, X, Menu, Wallet } from 'lucide-react';
+import {
+  Receipt, CreditCard, LayoutDashboard, LogOut, BarChart2,
+  Settings, Bell, X, Menu, Wallet, ChevronLeft, ChevronRight,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../hooks/useNotifications';
@@ -18,8 +21,11 @@ export default function MainLayout() {
   const location  = useLocation();
   const { isAuthenticated, isLoading, logout, user } = useAuth();
   const { notifications, unreadCount, markRead, markAllRead } = useNotifications();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [notifOpen,   setNotifOpen]   = useState(false);
+  const [sidebarOpen,      setSidebarOpen]      = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
+    localStorage.getItem('ftd_sidebar_collapsed') === 'true'
+  );
+  const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
 
@@ -34,8 +40,15 @@ export default function MainLayout() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Close sidebar on route change (mobile)
+  // Close mobile sidebar on route change
   useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
+
+  const toggleCollapse = () => {
+    setSidebarCollapsed(v => {
+      localStorage.setItem('ftd_sidebar_collapsed', String(!v));
+      return !v;
+    });
+  };
 
   if (isLoading) {
     return (
@@ -71,17 +84,30 @@ export default function MainLayout() {
             initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
             className="fixed top-0 left-0 z-40 h-full w-64 glass border-r border-border flex flex-col lg:hidden"
-            aria-label={t('nav.dashboard')}
+            aria-label="Main navigation"
           >
-            <SidebarContent location={location} logout={logout} onClose={() => setSidebarOpen(false)} t={t} />
+            <SidebarContent
+              location={location} logout={logout}
+              onClose={() => setSidebarOpen(false)}
+              t={t} collapsed={false}
+            />
           </motion.aside>
         )}
       </AnimatePresence>
 
       {/* ── Desktop sidebar ─────────────────────────────────── */}
-      <aside className="hidden lg:flex w-64 flex-shrink-0 glass border-r border-border flex-col" aria-label="Main navigation">
-        <SidebarContent location={location} logout={logout} t={t} />
-      </aside>
+      <motion.aside
+        animate={{ width: sidebarCollapsed ? 72 : 256 }}
+        transition={{ duration: 0.2 }}
+        className="hidden lg:flex flex-shrink-0 glass border-r border-border flex-col overflow-hidden"
+        aria-label="Main navigation"
+      >
+        <SidebarContent
+          location={location} logout={logout}
+          t={t} collapsed={sidebarCollapsed}
+          onToggleCollapse={toggleCollapse}
+        />
+      </motion.aside>
 
       {/* ── Main content area ───────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -184,26 +210,57 @@ export default function MainLayout() {
 }
 
 // ── SidebarContent ──────────────────────────────────────────────────────────
-function SidebarContent({ location, logout, onClose, t }: any) {
-  // Exact match for /app index, prefix match for children
+function SidebarContent({
+  location, logout, onClose, t, collapsed, onToggleCollapse,
+}: {
+  location: ReturnType<typeof useLocation>;
+  logout: () => void;
+  onClose?: () => void;
+  t: (key: string) => string;
+  collapsed: boolean;
+  onToggleCollapse?: () => void;
+}) {
   const isActive = (path: string) =>
     path === '/app' ? location.pathname === '/app' : location.pathname.startsWith(path);
 
   return (
     <>
-      <div className="p-5 flex items-center justify-between border-b border-border">
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-black group-hover:bg-primary-dark transition-colors" aria-hidden="true">F</div>
-          <span className="text-xl font-semibold tracking-tight" translate="no">FTD</span>
-        </Link>
+      {/* Logo row */}
+      <div className="p-4 flex items-center justify-between border-b border-border min-h-[64px]">
+        {!collapsed && (
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-black group-hover:bg-primary-dark transition-colors flex-shrink-0" aria-hidden="true">F</div>
+            <span className="text-xl font-semibold tracking-tight" translate="no">FTD</span>
+          </Link>
+        )}
+        {collapsed && (
+          <Link to="/" className="mx-auto">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white font-black hover:bg-primary-dark transition-colors" aria-hidden="true">F</div>
+          </Link>
+        )}
+        {/* Mobile close */}
         {onClose && (
           <button onClick={onClose} aria-label="Close navigation" className="p-1 rounded-lg hover:bg-surface-hover transition-colors lg:hidden">
             <X size={18} aria-hidden="true" />
           </button>
         )}
+        {/* Desktop collapse toggle */}
+        {onToggleCollapse && (
+          <button
+            onClick={onToggleCollapse}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="hidden lg:flex p-1 rounded-lg hover:bg-surface-hover transition-colors text-text-muted"
+          >
+            {collapsed
+              ? <ChevronRight size={16} aria-hidden="true" />
+              : <ChevronLeft size={16} aria-hidden="true" />
+            }
+          </button>
+        )}
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1" aria-label="Main navigation">
+      {/* Nav links */}
+      <nav className="flex-1 px-2 py-4 space-y-1" aria-label="Main navigation">
         {/* Skip to main content */}
         <a href="#main-content" className="sr-only focus-visible:not-sr-only focus-visible:block focus-visible:px-4 focus-visible:py-2 focus-visible:mb-2 focus-visible:bg-primary focus-visible:text-white focus-visible:rounded-xl">
           Skip to content
@@ -217,9 +274,10 @@ function SidebarContent({ location, logout, onClose, t }: any) {
               key={item.path}
               to={item.path}
               aria-current={active ? 'page' : undefined}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-[background-color,color] duration-200 relative ${
-                active ? 'text-white' : 'text-text-muted hover:text-white hover:bg-surface-hover'
-              }`}
+              title={collapsed ? t(item.key) : undefined}
+              className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-[background-color,color] duration-200 relative ${
+                collapsed ? 'justify-center' : ''
+              } ${active ? 'text-white' : 'text-text-muted hover:text-white hover:bg-surface-hover'}`}
             >
               {active && (
                 <motion.div
@@ -228,30 +286,33 @@ function SidebarContent({ location, logout, onClose, t }: any) {
                 />
               )}
               <Icon size={20} className="relative z-10 flex-shrink-0" aria-hidden="true" />
-              <span className="font-medium relative z-10">{t(item.key)}</span>
+              {!collapsed && <span className="font-medium relative z-10">{t(item.key)}</span>}
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-3 border-t border-border space-y-1">
+      {/* Bottom actions */}
+      <div className="p-2 border-t border-border space-y-1">
         <Link
           to="/app/settings"
           aria-current={location.pathname === '/app/settings' ? 'page' : undefined}
-          className={`flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-colors ${
-            location.pathname === '/app/settings' ? 'text-white bg-surface-hover' : 'text-text-muted hover:text-white hover:bg-surface-hover'
-          }`}
+          title={collapsed ? t('nav.settings') : undefined}
+          className={`flex items-center gap-3 px-3 py-3 w-full rounded-xl transition-colors ${
+            collapsed ? 'justify-center' : ''
+          } ${location.pathname === '/app/settings' ? 'text-white bg-surface-hover' : 'text-text-muted hover:text-white hover:bg-surface-hover'}`}
         >
           <Settings size={20} aria-hidden="true" />
-          <span className="font-medium">{t('nav.settings')}</span>
+          {!collapsed && <span className="font-medium">{t('nav.settings')}</span>}
         </Link>
         <button
           onClick={logout}
-          className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-text-muted hover:text-white hover:bg-surface-hover transition-colors"
+          title={collapsed ? t('nav.logout') : undefined}
+          className={`flex items-center gap-3 px-3 py-3 w-full rounded-xl text-text-muted hover:text-white hover:bg-surface-hover transition-colors ${collapsed ? 'justify-center' : ''}`}
           aria-label="Log out of your account"
         >
           <LogOut size={20} aria-hidden="true" />
-          <span className="font-medium">{t('nav.logout')}</span>
+          {!collapsed && <span className="font-medium">{t('nav.logout')}</span>}
         </button>
       </div>
     </>

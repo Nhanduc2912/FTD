@@ -1,13 +1,15 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
 
 export default function Login() {
-  const [email, setEmail]       = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError]       = useState('');
+  const [email, setEmail]             = useState('');
+  const [password, setPassword]       = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError]             = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
@@ -20,7 +22,11 @@ export default function Login() {
     setIsSubmitting(true);
     try {
       const response = await api.post('/auth/login', { email, password });
-      login(response.data.token, { _id: response.data._id, name: response.data.name, email: response.data.email });
+      login(response.data.token, {
+        _id: response.data._id,
+        name: response.data.name,
+        email: response.data.email,
+      });
       navigate('/app');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Check your credentials and try again.');
@@ -58,11 +64,8 @@ export default function Login() {
 
         <form id="login-form" onSubmit={handleLogin} className="space-y-5" noValidate>
           {error && (
-            <div
-              role="alert"
-              aria-live="polite"
-              className="p-3 rounded-xl bg-red-500/10 border border-red-500/50 text-red-400 text-sm"
-            >
+            <div role="alert" aria-live="polite"
+              className="p-3 rounded-xl bg-red-500/10 border border-red-500/50 text-red-400 text-sm">
               {error}
             </div>
           )}
@@ -72,16 +75,11 @@ export default function Login() {
               Email Address
             </label>
             <input
-              id="login-email"
-              type="email"
-              name="email"
-              autoComplete="email"
-              spellCheck={false}
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              id="login-email" type="email" name="email"
+              autoComplete="email" spellCheck={false}
+              value={email} onChange={e => setEmail(e.target.value)}
               className="w-full bg-surface-hover border border-border rounded-xl px-4 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-[border-color,box-shadow]"
-              placeholder="you@example.com…"
-              required
+              placeholder="you@example.com…" required
             />
           </div>
 
@@ -89,24 +87,29 @@ export default function Login() {
             <label htmlFor="login-password" className="block text-sm font-medium text-text-muted mb-2">
               Password
             </label>
-            <input
-              id="login-password"
-              type="password"
-              name="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className="w-full bg-surface-hover border border-border rounded-xl px-4 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-[border-color,box-shadow]"
-              placeholder="••••••••"
-              required
-            />
+            <div className="relative">
+              <input
+                id="login-password"
+                type={showPassword ? 'text' : 'password'}
+                name="password" autoComplete="current-password"
+                value={password} onChange={e => setPassword(e.target.value)}
+                className="w-full bg-surface-hover border border-border rounded-xl px-4 py-3 pr-11 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 transition-[border-color,box-shadow]"
+                placeholder="••••••••" required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(v => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors p-1"
+              >
+                {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+              </button>
+            </div>
           </div>
 
           <button
-            type="submit"
-            disabled={isSubmitting}
+            type="submit" disabled={isSubmitting} aria-busy={isSubmitting}
             className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-semibold rounded-xl px-4 py-3 transition-colors shadow-lg shadow-primary/20"
-            aria-busy={isSubmitting}
           >
             {isSubmitting ? 'Signing in…' : 'Sign In'}
           </button>

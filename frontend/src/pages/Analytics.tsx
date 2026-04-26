@@ -4,8 +4,9 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { TrendingUp, DollarSign, ShieldCheck, AlertCircle, TrendingDown } from 'lucide-react';
+import { TrendingUp, DollarSign, ShieldCheck, AlertCircle, TrendingDown, Receipt, CreditCard, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import api from '../api';
 
 // ── Config ─────────────────────────────────────────────────────────────────
@@ -203,6 +204,47 @@ export default function Analytics() {
       <p>{error}</p>
     </div>
   );
+
+  // ── Empty state: user has no data at all ──────────────────────────────────
+  if (subs.length === 0 && receipts.length === 0 && expenses.length === 0) {
+    return (
+      <div className="space-y-6">
+        <header>
+          <h1 className="text-3xl font-bold">{t('analytics.title')}</h1>
+          <p className="text-text-muted mt-2">{t('analytics.subtitle')}</p>
+        </header>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          className="glass border border-primary/20 rounded-2xl p-10 text-center"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
+            <TrendingUp size={32} className="text-primary" aria-hidden="true" />
+          </div>
+          <h2 className="text-xl font-bold mb-2">{t('analytics.noData', 'Your analytics will appear here')}</h2>
+          <p className="text-text-muted text-sm mb-8 max-w-sm mx-auto">
+            {t('analytics.noDataHint', 'Add some data to see charts, trends, and spending insights.')}
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-lg mx-auto">
+            <Link to="/app/receipts"
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20 hover:border-indigo-500/50 transition-colors group">
+              <Receipt size={24} className="text-indigo-400" aria-hidden="true" />
+              <span className="text-sm font-medium group-hover:text-white transition-colors">{t('receipts.uploadReceipt')}</span>
+            </Link>
+            <Link to="/app/subscriptions"
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 hover:border-purple-500/50 transition-colors group">
+              <CreditCard size={24} className="text-purple-400" aria-hidden="true" />
+              <span className="text-sm font-medium group-hover:text-white transition-colors">{t('subscriptions.addSubscription')}</span>
+            </Link>
+            <Link to="/app/expenses"
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20 hover:border-cyan-500/50 transition-colors group">
+              <Wallet size={24} className="text-cyan-400" aria-hidden="true" />
+              <span className="text-sm font-medium group-hover:text-white transition-colors">{t('expenses.addExpense')}</span>
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
