@@ -56,3 +56,8 @@ yarn-error.log*
 *.bak
 *.tmp
 *.swp
+
+# Generated TS files in src
+backend/src/**/*.js
+backend/src/**/*.js.map
+backend/src/**/*.d.ts
