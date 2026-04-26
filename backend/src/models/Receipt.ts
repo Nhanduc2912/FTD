@@ -58,4 +58,7 @@ const ReceiptSchema = new Schema<IReceipt>(
   }
 );
 
+// Compound index: user's receipts sorted by purchase date
+ReceiptSchema.index({ userId: 1, purchaseDate: -1 });
+
 export const Receipt = mongoose.model<IReceipt>('Receipt', ReceiptSchema);

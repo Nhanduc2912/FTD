@@ -60,4 +60,7 @@ const SubscriptionSchema = new Schema<ISubscription>(
   }
 );
 
+// Compound index: user's subscriptions by billing date (cron + list queries)
+SubscriptionSchema.index({ userId: 1, nextBillingDate: 1 });
+
 export const Subscription = mongoose.model<ISubscription>('Subscription', SubscriptionSchema);

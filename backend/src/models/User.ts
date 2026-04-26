@@ -1,9 +1,19 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+export type UserPlan = 'free' | 'pro';
+export type SubscriptionStatus = 'trialing' | 'active' | 'canceled' | 'past_due';
+
 export interface IUser extends Document {
   email: string;
   passwordHash: string;
   name?: string;
+  // ── P3: Billing ──────────────────────────────────────────────────────────
+  plan: UserPlan;
+  trialEndsAt?: Date;
+  subscriptionStatus: SubscriptionStatus;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
+  // ─────────────────────────────────────────────────────────────────────────
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,6 +35,27 @@ const UserSchema = new Schema<IUser>(
       type: String,
       trim: true,
     },
+    // ── P3: Billing ────────────────────────────────────────────────────────
+    plan: {
+      type: String,
+      enum: ['free', 'pro'],
+      default: 'free',
+    },
+    trialEndsAt: {
+      type: Date,
+    },
+    subscriptionStatus: {
+      type: String,
+      enum: ['trialing', 'active', 'canceled', 'past_due'],
+      default: 'trialing',
+    },
+    stripeCustomerId: {
+      type: String,
+    },
+    stripeSubscriptionId: {
+      type: String,
+    },
+    // ──────────────────────────────────────────────────────────────────────
   },
   {
     timestamps: true,

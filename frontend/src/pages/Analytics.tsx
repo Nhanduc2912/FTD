@@ -22,6 +22,10 @@ const CAT_COLORS: Record<string, string> = {
   'Other':         '#64748b',
 };
 
+// Stable string keys for Recharts dataKey — NEVER use t() here (language switch breaks chart)
+const FORECAST_KEY = 'subscriptions';
+const EXPENSE_KEY  = 'expenses';
+
 // Compute cost normalised to monthly
 function toMonthly(cost: number, cycle: string): number {
   if (cycle === 'yearly') return cost / 12;
@@ -120,8 +124,8 @@ export default function Analytics() {
   const monthlyForecast = useMemo(() => {
     const labels = getNextMonths(6, i18n.language);
     const monthlyTotal = subs.reduce((acc, s) => acc + toMonthly(s.cost, s.billingCycle), 0);
-    return labels.map(month => ({ month, [t('analytics.subsByCycle')]: parseFloat(monthlyTotal.toFixed(2)) }));
-  }, [subs, i18n.language, t]);
+    return labels.map(month => ({ month, [FORECAST_KEY]: parseFloat(monthlyTotal.toFixed(2)) }));
+  }, [subs, i18n.language]);
 
   // Pie chart: subs by billing cycle
   const cycleData = useMemo(() => {
@@ -136,10 +140,10 @@ export default function Analytics() {
   // Pie chart: receipts by rough cost bracket
   const costBrackets = useMemo(() => {
     const brackets = [
-      { name: 'Under $50', value: 0 },
-      { name: '$50–$200', value: 0 },
-      { name: '$200–$1K', value: 0 },
-      { name: 'Over $1K', value: 0 },
+      { name: t('analytics.bracket0'),   value: 0 },
+      { name: t('analytics.bracket50'),  value: 0 },
+      { name: t('analytics.bracket200'), value: 0 },
+      { name: t('analytics.bracket1k'),  value: 0 },
     ];
     receipts.forEach(r => {
       if (r.totalAmount < 50) brackets[0].value++;
@@ -148,7 +152,7 @@ export default function Analytics() {
       else brackets[3].value++;
     });
     return brackets.filter(b => b.value > 0);
-  }, [receipts]);
+  }, [receipts, t]);
 
   // Expense trend: last 6 months grouped by month
   const expenseTrend = useMemo(() => {
@@ -161,9 +165,9 @@ export default function Analytics() {
           return k === key;
         })
         .reduce((sum, e) => sum + e.amount, 0);
-      return { month: label, [t('nav.expenses')]: parseFloat(total.toFixed(2)) };
+      return { month: label, [EXPENSE_KEY]: parseFloat(total.toFixed(2)) };
     });
-  }, [expenses, t]);
+  }, [expenses]);
 
   // Expense by category (pie)
   const expenseByCat = useMemo(() => {
@@ -237,7 +241,7 @@ export default function Analytics() {
               <XAxis dataKey="month" tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
               <Tooltip content={<CustomTooltip fmt={fmt} />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
-              <Bar dataKey={t('analytics.subsByCycle')} fill="#6366f1" radius={[6, 6, 0, 0]} />
+              <Bar dataKey={FORECAST_KEY} fill="#6366f1" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -255,7 +259,7 @@ export default function Analytics() {
               <XAxis dataKey="month" tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
               <Tooltip content={<CustomTooltip fmt={fmt} />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
-              <Bar dataKey={t('nav.expenses')} fill="#f43f5e" radius={[6, 6, 0, 0]} />
+              <Bar dataKey={EXPENSE_KEY} fill="#f43f5e" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

@@ -162,12 +162,29 @@
     "languageLabel": "App Language",
     "currency": "Default Currency",
     "nameUpdated": "Name updated successfully!",
-    "passwordUpdated": "Password updated successfully!"
+    "passwordUpdated": "Password updated successfully!",
+    "passwordMismatch": "New passwords do not match",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "yourPlan": "Your Plan",
+    "freePlan": "Free",
+    "proPlan": "Pro",
+    "usageReceipts": "{{used}} / {{limit}} receipts used",
+    "usageSubscriptions": "{{used}} / {{limit}} subscriptions used",
+    "upgradeToPro": "Upgrade to Pro",
+    "dangerZone": "Danger Zone",
+    "deleteAccount": "Delete Account",
+    "deleteAccountHint": "Permanently delete your account and all data. This cannot be undone.",
+    "deleteAccountConfirm": "This will permanently delete your account and all receipts, subscriptions, and expenses. Type your password to confirm.",
+    "confirmYourPassword": "Enter your password to confirm",
+    "deleting": "Deleting…",
+    "deleteAccountBtn": "Yes, delete my account"
   },
   "common": {
     "loading": "Loading…",
     "error": "Something went wrong. Please try again.",
     "noData": "No data available.",
+    "close": "Close",
+    "confirm": "Confirm",
     "categories": {
       "Electronics": "Electronics",
       "Appliances": "Appliances",
@@ -184,5 +201,34 @@
       "Education": "Education",
       "Travel": "Travel"
     }
+  },
+  "analytics": {
+    "bracket0": "Under $50",
+    "bracket50": "$50–$200",
+    "bracket200": "$200–$1K",
+    "bracket1k": "Over $1K"
+  },
+  "upgrade": {
+    "title": "Upgrade to Pro",
+    "limitReached": "You've reached the Free plan limit",
+    "receiptsLimit": "Free plan allows up to 50 receipts.",
+    "subsLimit": "Free plan allows up to 10 subscriptions.",
+    "desc": "Upgrade to Pro for unlimited storage, advanced analytics, and priority renewal alerts.",
+    "cta": "Upgrade to Pro — $4.99/month",
+    "notNow": "Not now",
+    "currentPlan": "Current plan",
+    "free": "Free",
+    "pro": "Pro"
+  },
+  "onboarding": {
+    "title": "Welcome to FTD! 👋",
+    "subtitle": "Get started by completing these 3 steps:",
+    "step1Title": "Upload your first receipt",
+    "step1Desc": "Digitise a warranty or purchase receipt",
+    "step2Title": "Track a subscription",
+    "step2Desc": "Add Netflix, Spotify, or any recurring charge",
+    "step3Title": "Log an expense",
+    "step3Desc": "Record today's spending and see the trend",
+    "dismiss": "I'll explore on my own"
   }
 }

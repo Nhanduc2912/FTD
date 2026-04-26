@@ -162,12 +162,29 @@
     "languageLabel": "Ngôn ngữ ứng dụng",
     "currency": "Tiền tệ mặc định",
     "nameUpdated": "Tên đã được cập nhật thành công!",
-    "passwordUpdated": "Mật khẩu đã được cập nhật thành công!"
+    "passwordUpdated": "Mật khẩu đã được cập nhật thành công!",
+    "passwordMismatch": "Mật khẩu mới không khớp",
+    "passwordTooShort": "Mật khẩu phải có ít nhất 6 ký tự",
+    "yourPlan": "Gói của bạn",
+    "freePlan": "Miễn phí",
+    "proPlan": "Pro",
+    "usageReceipts": "{{used}} / {{limit}} hóa đơn đã dùng",
+    "usageSubscriptions": "{{used}} / {{limit}} đăng ký đã dùng",
+    "upgradeToPro": "Nâng cấp lên Pro",
+    "dangerZone": "Vùng nguy hiểm",
+    "deleteAccount": "Xóa tài khoản",
+    "deleteAccountHint": "Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu. Không thể hoàn tác.",
+    "deleteAccountConfirm": "Thao tác này sẽ xóa vĩnh viễn tài khoản và toàn bộ hóa đơn, đăng ký, chi tiêu. Nhập mật khẩu để xác nhận.",
+    "confirmYourPassword": "Nhập mật khẩu để xác nhận",
+    "deleting": "Đang xóa…",
+    "deleteAccountBtn": "Có, xóa tài khoản của tôi"
   },
   "common": {
     "loading": "Đang tải…",
     "error": "Đã xảy ra lỗi. Vui lòng thử lại.",
     "noData": "Không có dữ liệu.",
+    "close": "Đóng",
+    "confirm": "Xác nhận",
     "categories": {
       "Electronics": "Điện tử",
       "Appliances": "Đồ gia dụng",
@@ -184,5 +201,34 @@
       "Education": "Giáo dục",
       "Travel": "Du lịch"
     }
+  },
+  "analytics": {
+    "bracket0": "Dưới $50",
+    "bracket50": "$50–$200",
+    "bracket200": "$200–$1K",
+    "bracket1k": "Trên $1K"
+  },
+  "upgrade": {
+    "title": "Nâng cấp lên Pro",
+    "limitReached": "Bạn đã đạt giới hạn gói Miễn phí",
+    "receiptsLimit": "Gói miễn phí cho phép tối đa 50 hóa đơn.",
+    "subsLimit": "Gói miễn phí cho phép tối đa 10 đăng ký.",
+    "desc": "Nâng cấp lên Pro để lưu trữ không giới hạn, phân tích nâng cao và cảnh báo gia hạn ưu tiên.",
+    "cta": "Nâng cấp lên Pro — $4.99/tháng",
+    "notNow": "Không phải lúc này",
+    "currentPlan": "Gói hiện tại",
+    "free": "Miễn phí",
+    "pro": "Pro"
+  },
+  "onboarding": {
+    "title": "Chào mừng đến FTD! 👋",
+    "subtitle": "Bắt đầu bằng cách hoàn thành 3 bước sau:",
+    "step1Title": "Tải lên hóa đơn đầu tiên",
+    "step1Desc": "Số hóa một hóa đơn mua hàng hoặc bảo hành",
+    "step2Title": "Theo dõi một đăng ký",
+    "step2Desc": "Thêm Netflix, Spotify hoặc bất kỳ khoản phí định kỳ nào",
+    "step3Title": "Ghi lại một khoản chi tiêu",
+    "step3Desc": "Ghi lại chi tiêu hôm nay và xem xu hướng",
+    "dismiss": "Tôi tự khám phá"
   }
 }

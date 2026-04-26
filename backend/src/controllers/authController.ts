@@ -3,6 +3,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
 import { AuthRequest } from '../middleware/authMiddleware';
+import { Receipt } from '../models/Receipt';
+import { Subscription } from '../models/Subscription';
+import { Expense } from '../models/Expense';
 
 const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret', {
@@ -94,7 +97,14 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = await User.findById(req.user!._id).select('-passwordHash');
     if (!user) { res.status(404).json({ message: 'User not found' }); return; }
-    res.json({ _id: user._id, email: user.email, name: user.name });
+    res.json({
+      _id: user._id,
+      email: user.email,
+      name: user.name,
+      plan: user.plan,
+      subscriptionStatus: user.subscriptionStatus,
+      trialEndsAt: user.trialEndsAt,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }
@@ -144,6 +154,34 @@ export const changePassword = async (req: AuthRequest, res: Response): Promise<v
     user.passwordHash = await bcrypt.hash(newPassword, salt);
     await user.save();
     res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+// @desc  Delete account and all associated data
+// @route DELETE /api/auth/account
+// @access Private
+export const deleteAccount = async (req: AuthRequest, res: Response): Promise<void> => {
+  const { password } = req.body;
+  if (!password) {
+    res.status(400).json({ message: 'Password confirmation is required' });
+    return;
+  }
+  try {
+    const user = await User.findById(req.user!._id);
+    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+      res.status(401).json({ message: 'Incorrect password' });
+      return;
+    }
+    const userId = user._id;
+    // Delete all user data atomically
+    await Promise.all([
+      Expense.deleteMany({ userId }),
+      Receipt.deleteMany({ userId }),
+      Subscription.deleteMany({ userId }),
+    ]);
+    await user.deleteOne();
+    res.json({ message: 'Account and all data permanently deleted' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }

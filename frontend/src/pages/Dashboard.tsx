@@ -1,10 +1,11 @@
-﻿import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCard, Receipt, AlertCircle, ArrowRight, TrendingDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
+import WelcomeBanner from '../components/WelcomeBanner';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -19,6 +20,9 @@ export default function Dashboard() {
   const [recentReceipts, setRecentReceipts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
+  const [showWelcome, setShowWelcome] = useState(
+    () => localStorage.getItem('ftd_welcome_dismissed') !== 'true'
+  );
 
   // locale-aware formatters
   const currFmt = useMemo(
@@ -112,6 +116,16 @@ export default function Dashboard() {
           {t('dashboard.welcome', { name: user?.name ?? '' })}
         </p>
       </header>
+
+      {/* Onboarding banner for new users */}
+      <AnimatePresence>
+        {showWelcome && stats.totalSubs === 0 && stats.totalReceipts === 0 && stats.totalExpenses === 0 && (
+          <WelcomeBanner onDismiss={() => {
+            setShowWelcome(false);
+            localStorage.setItem('ftd_welcome_dismissed', 'true');
+          }} />
+        )}
+      </AnimatePresence>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard

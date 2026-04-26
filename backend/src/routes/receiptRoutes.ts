@@ -7,6 +7,7 @@ import {
 } from '../controllers/receiptController';
 import { protect } from '../middleware/authMiddleware';
 import { upload } from '../middleware/uploadMiddleware';
+import { checkReceiptLimit } from '../middleware/planLimits';
 
 const router = Router();
 
@@ -15,7 +16,7 @@ router.use(protect);
 
 router.route('/')
   .get(getReceipts)
-  .post(upload.single('receiptImage'), createReceipt);
+  .post(checkReceiptLimit, upload.single('receiptImage'), createReceipt); // P3: Free tier gate
 
 router.route('/:id')
   .get(getReceiptById)

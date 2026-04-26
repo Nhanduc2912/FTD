@@ -38,4 +38,7 @@ const ExpenseSchema = new Schema<IExpense>(
   { timestamps: true }
 );
 
+// Compound index: user's expenses sorted by date (most common query pattern)
+ExpenseSchema.index({ userId: 1, date: -1 });
+
 export const Expense = mongoose.model<IExpense>('Expense', ExpenseSchema);
