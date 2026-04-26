@@ -90,13 +90,16 @@ export default function Settings() {
   const isPro = plan === 'pro';
 
   return (
-    <div className="space-y-8 max-w-2xl">
+    <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-bold text-wrap-balance">{t('settings.title')}</h1>
+        <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
         <p className="text-text-muted mt-2">{t('settings.subtitle')}</p>
       </header>
 
-      {/* ── Profile ─────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+
+      {/* ── Column Left ──────────────────────────────────── */}
+      <div className="space-y-6">
       <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="glass border border-border rounded-2xl overflow-hidden">
         <div className="flex items-center gap-3 p-5 border-b border-border">
           <div className="p-2 rounded-lg bg-surface-hover text-primary"><User size={20} aria-hidden="true" /></div>
@@ -154,7 +157,10 @@ export default function Settings() {
         </div>
       </motion.section>
 
-      {/* ── Language ────────────────────────────────────────────────────── */}
+      </div>{/* end col-left */}
+
+      {/* ── Column Right ─────────────────────────────────── */}
+      <div className="space-y-6">
       <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
         className="glass border border-border rounded-2xl overflow-hidden">
         <div className="flex items-center gap-3 p-5 border-b border-border">
@@ -311,6 +317,9 @@ export default function Settings() {
           </div>
         )}
       </AnimatePresence>
+
+      </div>{/* end col-right */}
+      </div>{/* end grid */}
     </div>
   );
 }
