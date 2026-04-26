@@ -6,6 +6,7 @@ import connectDB from "./config/db";
 import authRoutes from "./routes/authRoutes";
 import receiptRoutes from "./routes/receiptRoutes";
 import subscriptionRoutes from "./routes/subscriptionRoutes";
+import expenseRoutes from "./routes/expenseRoutes";
 import { startCronJobs } from "./jobs/cron";
 
 dotenv.config();
@@ -29,6 +30,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use("/api/auth", authRoutes);
 app.use("/api/receipts", receiptRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
+app.use("/api/expenses", expenseRoutes);
 
 app.get("/", (req, res) => {
   res.send("FTD API đang chạy...");

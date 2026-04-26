@@ -1,17 +1,25 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Save, KeyRound, Shield, User, AlertCircle, CheckCircle } from 'lucide-react';
+import { Save, KeyRound, Shield, User, AlertCircle, CheckCircle, Globe } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
 
+const LANGUAGES = [
+  { code: 'en', label: 'English', flag: '🇺🇸' },
+  { code: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' },
+];
+
 export default function Settings() {
   const { user, login, token } = useAuth();
+  const { t, i18n } = useTranslation();
   const [nameForm, setNameForm] = useState({ name: user?.name || '' });
   const [pwForm, setPwForm] = useState({ currentPassword: '', newPassword: '', confirm: '' });
   const [nameStatus, setNameStatus] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   const [pwStatus, setPwStatus] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   const [nameSaving, setNameSaving] = useState(false);
   const [pwSaving, setPwSaving] = useState(false);
+  const [currentLang, setCurrentLang] = useState(i18n.language.startsWith('vi') ? 'vi' : 'en');
 
   const handleNameSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,9 +28,9 @@ export default function Settings() {
     try {
       const res = await api.put('/auth/profile', { name: nameForm.name });
       if (token) login(token, res.data);
-      setNameStatus({ type: 'success', msg: 'Name updated successfully!' });
+      setNameStatus({ type: 'success', msg: t('settings.nameUpdated') });
     } catch (err: any) {
-      setNameStatus({ type: 'error', msg: err.response?.data?.message || 'Failed to update name' });
+      setNameStatus({ type: 'error', msg: err.response?.data?.message || t('common.error') });
     } finally {
       setNameSaving(false);
     }
@@ -42,27 +50,33 @@ export default function Settings() {
     setPwStatus(null);
     try {
       await api.put('/auth/password', { currentPassword: pwForm.currentPassword, newPassword: pwForm.newPassword });
-      setPwStatus({ type: 'success', msg: 'Password updated successfully!' });
+      setPwStatus({ type: 'success', msg: t('settings.passwordUpdated') });
       setPwForm({ currentPassword: '', newPassword: '', confirm: '' });
     } catch (err: any) {
-      setPwStatus({ type: 'error', msg: err.response?.data?.message || 'Failed to change password' });
+      setPwStatus({ type: 'error', msg: err.response?.data?.message || t('common.error') });
     } finally {
       setPwSaving(false);
     }
   };
 
+  const handleLanguageChange = (langCode: string) => {
+    setCurrentLang(langCode);
+    i18n.changeLanguage(langCode);
+    localStorage.setItem('ftd_language', langCode);
+  };
+
   return (
     <div className="space-y-8 max-w-2xl">
       <header>
-        <h1 className="text-3xl font-bold text-wrap-balance">Settings</h1>
-        <p className="text-text-muted mt-2">Manage your account preferences.</p>
+        <h1 className="text-3xl font-bold text-wrap-balance">{t('settings.title')}</h1>
+        <p className="text-text-muted mt-2">{t('settings.subtitle')}</p>
       </header>
 
       {/* Profile Section */}
       <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="glass border border-border rounded-2xl overflow-hidden">
         <div className="flex items-center gap-3 p-5 border-b border-border">
           <div className="p-2 rounded-lg bg-surface-hover text-primary"><User size={20} aria-hidden="true" /></div>
-          <h2 className="text-lg font-semibold">Profile</h2>
+          <h2 className="text-lg font-semibold">{t('settings.profile')}</h2>
         </div>
         <form onSubmit={handleNameSave} className="p-5 space-y-4">
           <div className="flex items-center gap-4 mb-4">
@@ -76,7 +90,7 @@ export default function Settings() {
           </div>
           {nameStatus && <StatusBar status={nameStatus} />}
           <div>
-            <label htmlFor="settings-name" className="block text-sm text-text-muted mb-1">Display Name</label>
+            <label htmlFor="settings-name" className="block text-sm text-text-muted mb-1">{t('settings.displayName')}</label>
             <input
               id="settings-name"
               type="text"
@@ -92,27 +106,69 @@ export default function Settings() {
             <button type="submit" disabled={nameSaving}
               className="flex items-center gap-2 px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl font-medium transition-colors disabled:opacity-50">
               <Save size={16} aria-hidden="true" />
-              {nameSaving ? 'Saving…' : 'Save Name'}
+              {nameSaving ? t('settings.saving') : t('settings.saveName')}
             </button>
           </div>
         </form>
       </motion.section>
 
+      {/* Language & Region Section */}
+      <motion.section
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.08 }}
+        className="glass border border-border rounded-2xl overflow-hidden"
+      >
+        <div className="flex items-center gap-3 p-5 border-b border-border">
+          <div className="p-2 rounded-lg bg-surface-hover text-primary"><Globe size={20} aria-hidden="true" /></div>
+          <h2 className="text-lg font-semibold">{t('settings.language')}</h2>
+        </div>
+        <div className="p-5">
+          <p className="text-sm text-text-muted mb-4">{t('settings.languageLabel')}</p>
+          <div className="grid grid-cols-2 gap-3">
+            {LANGUAGES.map(lang => (
+              <button
+                key={lang.code}
+                id={`lang-${lang.code}`}
+                onClick={() => handleLanguageChange(lang.code)}
+                aria-pressed={currentLang === lang.code}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all duration-200 font-medium text-left ${
+                  currentLang === lang.code
+                    ? 'border-primary bg-primary/10 text-white'
+                    : 'border-border bg-surface-hover text-text-muted hover:border-primary/40 hover:text-white'
+                }`}
+              >
+                <span className="text-2xl" aria-hidden="true">{lang.flag}</span>
+                <span>{lang.label}</span>
+                {currentLang === lang.code && (
+                  <motion.span
+                    initial={{ scale: 0 }} animate={{ scale: 1 }}
+                    className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs"
+                  >
+                    ✓
+                  </motion.span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </motion.section>
+
       {/* Password Section */}
-      <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass border border-border rounded-2xl overflow-hidden">
+      <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }} className="glass border border-border rounded-2xl overflow-hidden">
         <div className="flex items-center gap-3 p-5 border-b border-border">
           <div className="p-2 rounded-lg bg-surface-hover text-primary"><KeyRound size={20} aria-hidden="true" /></div>
-          <h2 className="text-lg font-semibold">Change Password</h2>
+          <h2 className="text-lg font-semibold">{t('settings.changePassword')}</h2>
         </div>
         <form onSubmit={handlePasswordSave} className="p-5 space-y-4">
           {pwStatus && <StatusBar status={pwStatus} />}
           {[
-            { id: 'current-pw', label: 'Current Password', key: 'currentPassword', autoComplete: 'current-password' },
-            { id: 'new-pw', label: 'New Password', key: 'newPassword', autoComplete: 'new-password' },
-            { id: 'confirm-pw', label: 'Confirm New Password', key: 'confirm', autoComplete: 'new-password' },
+            { id: 'current-pw', labelKey: 'settings.currentPassword', key: 'currentPassword', autoComplete: 'current-password' },
+            { id: 'new-pw',     labelKey: 'settings.newPassword',     key: 'newPassword',     autoComplete: 'new-password' },
+            { id: 'confirm-pw', labelKey: 'settings.confirmPassword', key: 'confirm',          autoComplete: 'new-password' },
           ].map(field => (
             <div key={field.id}>
-              <label htmlFor={field.id} className="block text-sm text-text-muted mb-1">{field.label}</label>
+              <label htmlFor={field.id} className="block text-sm text-text-muted mb-1">{t(field.labelKey)}</label>
               <input
                 id={field.id}
                 type="password"
@@ -129,7 +185,7 @@ export default function Settings() {
             <button type="submit" disabled={pwSaving}
               className="flex items-center gap-2 px-5 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl font-medium transition-colors disabled:opacity-50">
               <Shield size={16} aria-hidden="true" />
-              {pwSaving ? 'Updating…' : 'Update Password'}
+              {pwSaving ? t('settings.updating') : t('settings.updatePassword')}
             </button>
           </div>
         </form>
