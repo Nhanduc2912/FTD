@@ -3,6 +3,8 @@ import MainLayout from './layouts/MainLayout';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Subscriptions from './pages/Subscriptions';
+import Receipts from './pages/Receipts';
 
 function App() {
   return (
@@ -13,8 +15,8 @@ function App() {
       {/* Protected Routes (Main Layout) */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/receipts" element={<div className="p-8"><h1 className="text-3xl font-bold">Receipts Tracker</h1></div>} />
-        <Route path="/subscriptions" element={<div className="p-8"><h1 className="text-3xl font-bold">Subscription Guillotine</h1></div>} />
+        <Route path="/receipts" element={<Receipts />} />
+        <Route path="/subscriptions" element={<Subscriptions />} />
       </Route>
     </Routes>
   );
