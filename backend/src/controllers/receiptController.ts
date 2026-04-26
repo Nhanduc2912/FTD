@@ -4,11 +4,25 @@ import path from 'path';
 import { AuthRequest } from '../middleware/authMiddleware';
 import { Receipt } from '../models/Receipt';
 
-// Get all receipts for a user
+// Get all receipts for a user (paginated)
 export const getReceipts = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const receipts = await Receipt.find({ userId: req.user!._id }).sort({ createdAt: -1 });
-    res.json(receipts);
+    const { page, limit } = req.query;
+    const pageNum  = Math.max(1, Number(page) || 1);
+    const limitNum = Math.min(100, Math.max(1, Number(limit) || 20));
+    const skip     = (pageNum - 1) * limitNum;
+
+    const [receipts, total] = await Promise.all([
+      Receipt.find({ userId: req.user!._id }).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+      Receipt.countDocuments({ userId: req.user!._id }),
+    ]);
+
+    res.json({
+      data: receipts,
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+      total,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server Error', error });
   }

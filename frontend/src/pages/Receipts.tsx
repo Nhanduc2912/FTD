@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, startTransition } from 'react';
+import { useState, useEffect, useMemo, startTransition, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, Search, Trash2, AlertCircle } from 'lucide-react';
+import { Upload, FileText, Search, Trash2, AlertCircle, ChevronLeft, ChevronRight, Image } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import api from '../api';
@@ -42,12 +42,16 @@ export default function Receipts() {
   const [isModalOpen, setIsModalOpen]     = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [upgradeLimit, setUpgradeLimit]   = useState(false);
+  const [page, setPage]                   = useState(1);
+  const [totalPages, setTotalPages]       = useState(1);
   const [formData, setFormData] = useState({
     storeName: '', itemName: '', purchaseDate: '', totalAmount: '', expiryDate: '', category: 'Other',
   });
-  const [imageFile, setImageFile]   = useState<File | null>(null);
+  const [imageFile, setImageFile]     = useState<File | null>(null);
+  const [dragOver, setDragOver]       = useState(false);
   const [uploadError, setUploadError] = useState('');
-  const [uploading, setUploading]   = useState(false);
+  const [uploading, setUploading]     = useState(false);
+  const fileInputRef                  = useRef<HTMLInputElement>(null);
 
   // Locale-aware formatters
   const fmt = useMemo(
@@ -59,18 +63,25 @@ export default function Receipts() {
     [i18n.language]
   );
 
-  useEffect(() => { fetchReceipts(); }, []);
+  useEffect(() => { fetchReceipts(); }, [page]);
 
-  const fetchReceipts = async () => {
+  const fetchReceipts = useCallback(async () => {
+    setLoading(true);
     try {
-      const response = await api.get('/receipts');
-      setReceipts(response.data);
+      const response = await api.get(`/receipts?page=${page}&limit=20`);
+      // Support both paginated {data, page, totalPages} and legacy array
+      if (Array.isArray(response.data)) {
+        setReceipts(response.data);
+      } else {
+        setReceipts(response.data.data);
+        setTotalPages(response.data.totalPages);
+      }
     } catch {
       setFetchError(t('common.error'));
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, t]);
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -289,6 +300,31 @@ export default function Receipts() {
             )}
           </tbody>
         </table>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              aria-label={t('common.prevPage')}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-surface-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft size={14} aria-hidden="true" /> {t('common.prev')}
+            </button>
+            <span className="text-sm text-text-muted tabular-nums">
+              {t('common.pageOf', { page, total: totalPages })}
+            </span>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              aria-label={t('common.nextPage')}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border text-sm hover:bg-surface-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {t('common.next')} <ChevronRight size={14} aria-hidden="true" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Upload Modal */}
@@ -359,11 +395,47 @@ export default function Receipts() {
                     onChange={e => setFormData({ ...formData, expiryDate: e.target.value })}
                     className="w-full bg-surface-hover border border-border rounded-xl px-4 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50" />
                 </div>
+                {/* Drag-and-drop file zone */}
                 <div>
-                  <label htmlFor="up-file" className="block text-sm text-text-muted mb-1">{t('receipts.receiptImage')}</label>
-                  <input required id="up-file" type="file" accept="image/jpeg,image/png,image/webp,application/pdf"
+                  <p className="block text-sm text-text-muted mb-2">{t('receipts.receiptImage')}</p>
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label={t('receipts.dropZoneLabel')}
+                    onClick={() => fileInputRef.current?.click()}
+                    onKeyDown={e => e.key === 'Enter' && fileInputRef.current?.click()}
+                    onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={e => {
+                      e.preventDefault();
+                      setDragOver(false);
+                      const file = e.dataTransfer.files[0];
+                      if (file) setImageFile(file);
+                    }}
+                    className={`flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed cursor-pointer transition-colors ${
+                      dragOver
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:border-primary/50 hover:bg-surface-hover'
+                    }`}
+                  >
+                    <Image size={28} className={dragOver ? 'text-primary' : 'text-text-muted'} aria-hidden="true" />
+                    {imageFile ? (
+                      <p className="text-sm text-primary font-medium text-center">{imageFile.name}</p>
+                    ) : (
+                      <>
+                        <p className="text-sm text-text-muted text-center">{t('receipts.dropZoneMain')}</p>
+                        <p className="text-xs text-text-muted opacity-60">{t('receipts.dropZoneSub')}</p>
+                      </>
+                    )}
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    id="up-file"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                    className="sr-only"
                     onChange={e => setImageFile(e.target.files?.[0] ?? null)}
-                    className="w-full bg-surface-hover border border-border rounded-xl px-4 py-2 text-sm file:mr-3 file:px-3 file:py-1 file:rounded-lg file:bg-primary/20 file:text-primary file:border-0 file:text-sm cursor-pointer" />
+                  />
                 </div>
                 <div className="flex gap-3 pt-2">
                   <button type="button" onClick={() => { setIsModalOpen(false); setUploadError(''); }}

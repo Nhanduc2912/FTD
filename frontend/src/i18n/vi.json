@@ -6,7 +6,10 @@
     "analytics": "Phân tích",
     "expenses": "Chi tiêu",
     "settings": "Cài đặt",
-    "logout": "Đăng xuất"
+    "logout": "Đăng xuất",
+    "notifications": "Thông báo",
+    "markAllRead": "Đánh dấu đã đọc",
+    "noNotifications": "Không có thông báo mới."
   },
   "dashboard": {
     "title": "Tổng quan",
@@ -84,7 +87,10 @@
     "statusExpired": "Đã hết hạn",
     "statusNoWarranty": "Không bảo hành",
     "noResultsFiltered": "Không có hóa đơn nào khớp bộ lọc.",
-    "receiptFrom": "Hóa đơn từ"
+    "receiptFrom": "Hóa đơn từ",
+    "dropZoneLabel": "Nhấp hoặc kéo ảnh hóa đơn vào đây",
+    "dropZoneMain": "Nhấp để chọn hoặc kéo & thả",
+    "dropZoneSub": "JPEG, PNG, WebP, PDF — tối đa 5 MB"
   },
   "subscriptions": {
     "title": "Chặt đăng ký",
@@ -140,6 +146,10 @@
     "cancel": "Hủy",
     "saving": "Đang lưu…",
     "saveExpense": "Lưu chi tiêu",
+    "addSuccess": "Đã thêm khoản chi",
+    "deleteSuccess": "Đã xóa khoản chi",
+    "perDay": "mỗi ngày",
+    "selectMonth": "Chọn tháng",
     "spendingByCategory": "Chi tiêu theo danh mục",
     "noCategoryData": "Chưa có dữ liệu chi tiêu tháng này.",
     "monthlySpend": "Xu hướng chi tiêu theo tháng"
@@ -253,5 +263,33 @@
     "step3Title": "Ghi lại một khoản chi tiêu",
     "step3Desc": "Ghi lại chi tiêu hôm nay và xem xu hướng",
     "dismiss": "Tôi tự khám phá"
+  },
+  "common": {
+    "prev": "Trước",
+    "next": "Tiếp",
+    "prevPage": "Trang trước",
+    "nextPage": "Trang tiếp",
+    "pageOf": "Trang {{page}} / {{total}}",
+    "close": "Đóng",
+    "error": "Đã có lỗi xảy ra. Vui lòng thử lại.",
+    "loading": "Đang tải…",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "categories": {
+      "Food & Drink": "Ăn uống",
+      "Transport": "Di chuyển",
+      "Entertainment": "Giải trí",
+      "Shopping": "Mua sắm",
+      "Health": "Sức khỏe",
+      "Utilities": "Tiện ích",
+      "Education": "Giáo dục",
+      "Travel": "Du lịch",
+      "Other": "Khác",
+      "Electronics": "Điện tử",
+      "Appliances": "Thiết bị",
+      "Clothing": "Quần áo",
+      "Food": "Thực phẩm",
+      "Services": "Dịch vụ"
+    }
   }
 }

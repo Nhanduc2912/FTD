@@ -2,11 +2,25 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/authMiddleware';
 import { Subscription } from '../models/Subscription';
 
-// Get all subscriptions for a user
+// Get all subscriptions for a user (paginated)
 export const getSubscriptions = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const subscriptions = await Subscription.find({ userId: req.user!._id }).sort({ nextBillingDate: 1 });
-    res.json(subscriptions);
+    const { page, limit } = req.query;
+    const pageNum  = Math.max(1, Number(page) || 1);
+    const limitNum = Math.min(100, Math.max(1, Number(limit) || 20));
+    const skip     = (pageNum - 1) * limitNum;
+
+    const [subscriptions, total] = await Promise.all([
+      Subscription.find({ userId: req.user!._id }).sort({ nextBillingDate: 1 }).skip(skip).limit(limitNum),
+      Subscription.countDocuments({ userId: req.user!._id }),
+    ]);
+
+    res.json({
+      data: subscriptions,
+      page: pageNum,
+      totalPages: Math.ceil(total / limitNum),
+      total,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server Error', error });
   }

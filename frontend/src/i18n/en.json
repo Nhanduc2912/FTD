@@ -6,7 +6,10 @@
     "analytics": "Analytics",
     "expenses": "Expenses",
     "settings": "Settings",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "notifications": "Notifications",
+    "markAllRead": "Mark all read",
+    "noNotifications": "All clear! No expiring items."
   },
   "dashboard": {
     "title": "Dashboard Overview",
@@ -84,7 +87,10 @@
     "statusExpired": "Expired",
     "statusNoWarranty": "No Warranty",
     "noResultsFiltered": "No receipts match your filters.",
-    "receiptFrom": "Receipt from"
+    "receiptFrom": "Receipt from",
+    "dropZoneLabel": "Click or drag a receipt image here",
+    "dropZoneMain": "Click to browse or drag & drop",
+    "dropZoneSub": "JPEG, PNG, WebP, PDF — max 5 MB"
   },
   "subscriptions": {
     "title": "Subscription Guillotine",
@@ -140,6 +146,10 @@
     "cancel": "Cancel",
     "saving": "Saving…",
     "saveExpense": "Save Expense",
+    "addSuccess": "Expense added",
+    "deleteSuccess": "Expense deleted",
+    "perDay": "per day",
+    "selectMonth": "Select month",
     "spendingByCategory": "Spending by Category",
     "noCategoryData": "No expense data for this month.",
     "monthlySpend": "Monthly Spending Trend"
@@ -253,5 +263,33 @@
     "step3Title": "Log an expense",
     "step3Desc": "Record today's spending and see the trend",
     "dismiss": "I'll explore on my own"
+  },
+  "common": {
+    "prev": "Prev",
+    "next": "Next",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "pageOf": "Page {{page}} of {{total}}",
+    "close": "Close",
+    "error": "Something went wrong. Please try again.",
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "categories": {
+      "Food & Drink": "Food & Drink",
+      "Transport": "Transport",
+      "Entertainment": "Entertainment",
+      "Shopping": "Shopping",
+      "Health": "Health",
+      "Utilities": "Utilities",
+      "Education": "Education",
+      "Travel": "Travel",
+      "Other": "Other",
+      "Electronics": "Electronics",
+      "Appliances": "Appliances",
+      "Clothing": "Clothing",
+      "Food": "Food",
+      "Services": "Services"
+    }
   }
 }

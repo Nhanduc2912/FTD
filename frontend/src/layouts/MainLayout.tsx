@@ -155,16 +155,16 @@ export default function MainLayout() {
                     aria-label="Notifications"
                   >
                     <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                      <h3 className="font-semibold">Notifications</h3>
+                      <h3 className="font-semibold">{t('nav.notifications')}</h3>
                       {unreadCount > 0 && (
                         <button onClick={markAllRead} className="text-xs text-primary hover:underline focus-visible:outline-none focus-visible:underline">
-                          Mark all read
+                          {t('nav.markAllRead')}
                         </button>
                       )}
                     </div>
                     <div className="max-h-80 overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
                       {notifications.length === 0 ? (
-                        <p className="px-4 py-8 text-center text-text-muted text-sm">All clear! No expiring items.</p>
+                        <p className="px-4 py-8 text-center text-text-muted text-sm">{t('nav.noNotifications')}</p>
                       ) : (
                         notifications.map(n => (
                           <button
