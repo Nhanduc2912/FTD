@@ -4,13 +4,23 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { TrendingUp, DollarSign, ShieldCheck, AlertCircle } from 'lucide-react';
+import { TrendingUp, DollarSign, ShieldCheck, AlertCircle, TrendingDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import api from '../api';
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
+// ── Config ─────────────────────────────────────────────────────────────────
 const PIE_COLORS = ['#6366f1', '#22d3ee', '#f59e0b', '#10b981', '#f43f5e'];
-const CYCLE_LABELS: Record<string, string> = { weekly: 'Weekly', monthly: 'Monthly', yearly: 'Yearly' };
+const CAT_COLORS: Record<string, string> = {
+  'Food & Drink':  '#f59e0b',
+  'Transport':     '#6366f1',
+  'Entertainment': '#ec4899',
+  'Shopping':      '#f43f5e',
+  'Health':        '#10b981',
+  'Utilities':     '#22d3ee',
+  'Education':     '#8b5cf6',
+  'Travel':        '#0ea5e9',
+  'Other':         '#64748b',
+};
 
 // Compute cost normalised to monthly
 function toMonthly(cost: number, cycle: string): number {
@@ -20,18 +30,32 @@ function toMonthly(cost: number, cycle: string): number {
 }
 
 // Generate "next N months" labels
-function getNextMonths(n: number): string[] {
+function getNextMonths(n: number, locale: string): string[] {
   const labels: string[] = [];
   const now = new Date();
   for (let i = 0; i < n; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-    labels.push(d.toLocaleString('default', { month: 'short', year: '2-digit' }));
+    labels.push(d.toLocaleString(locale, { month: 'short', year: '2-digit' }));
   }
   return labels;
 }
 
+// Last 6 months for expense trend
+function getLast6MonthsKeys(): { key: string; label: string }[] {
+  const result = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    result.push({
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+      label: d.toLocaleString('default', { month: 'short', year: '2-digit' }),
+    });
+  }
+  return result;
+}
+
 // ── Custom Tooltip ─────────────────────────────────────────────────────────
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label, fmt }: any) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-surface border border-border rounded-xl px-4 py-3 shadow-2xl text-sm">
@@ -47,22 +71,31 @@ function CustomTooltip({ active, payload, label }: any) {
 
 // ── Main Component ──────────────────────────────────────────────────────────
 export default function Analytics() {
+  const { t, i18n } = useTranslation();
   const [subs, setSubs] = useState<any[]>([]);
   const [receipts, setReceipts] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const fmt = useMemo(() =>
+    new Intl.NumberFormat(i18n.language, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }),
+    [i18n.language]
+  );
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [subsRes, rcpRes] = await Promise.all([
+        const [subsRes, rcpRes, expRes] = await Promise.all([
           api.get('/subscriptions'),
           api.get('/receipts'),
+          api.get('/expenses'),
         ]);
         setSubs(subsRes.data);
         setReceipts(rcpRes.data);
+        setExpenses(expRes.data);
       } catch {
-        setError('Failed to load analytics data. Please refresh the page.');
+        setError(t('common.error'));
       } finally {
         setLoading(false);
       }
@@ -70,7 +103,7 @@ export default function Analytics() {
     load();
   }, []);
 
-  // ── Derived data (memoised to avoid recalc on re-renders) ────────────────
+  // ── Derived data (memoised) ────────────────────────────────────────────
   const totalMonthly = useMemo(() =>
     subs.reduce((acc, s) => acc + toMonthly(s.cost, s.billingCycle), 0), [subs]);
 
@@ -85,17 +118,20 @@ export default function Analytics() {
 
   // Bar chart: projected monthly spend for next 6 months
   const monthlyForecast = useMemo(() => {
-    const labels = getNextMonths(6);
+    const labels = getNextMonths(6, i18n.language);
     const monthlyTotal = subs.reduce((acc, s) => acc + toMonthly(s.cost, s.billingCycle), 0);
-    return labels.map(month => ({ month, Subscriptions: parseFloat(monthlyTotal.toFixed(2)) }));
-  }, [subs]);
+    return labels.map(month => ({ month, [t('analytics.subsByCycle')]: parseFloat(monthlyTotal.toFixed(2)) }));
+  }, [subs, i18n.language, t]);
 
   // Pie chart: subs by billing cycle
   const cycleData = useMemo(() => {
     const map: Record<string, number> = {};
     subs.forEach(s => { map[s.billingCycle] = (map[s.billingCycle] || 0) + 1; });
-    return Object.entries(map).map(([cycle, count]) => ({ name: CYCLE_LABELS[cycle] ?? cycle, value: count }));
-  }, [subs]);
+    return Object.entries(map).map(([cycle, count]) => ({
+      name: t(`subscriptions.${cycle}`, cycle),
+      value: count,
+    }));
+  }, [subs, t]);
 
   // Pie chart: receipts by rough cost bracket
   const costBrackets = useMemo(() => {
@@ -114,6 +150,42 @@ export default function Analytics() {
     return brackets.filter(b => b.value > 0);
   }, [receipts]);
 
+  // Expense trend: last 6 months grouped by month
+  const expenseTrend = useMemo(() => {
+    const months = getLast6MonthsKeys();
+    return months.map(({ key, label }) => {
+      const total = expenses
+        .filter(e => {
+          const d = new Date(e.date);
+          const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          return k === key;
+        })
+        .reduce((sum, e) => sum + e.amount, 0);
+      return { month: label, [t('nav.expenses')]: parseFloat(total.toFixed(2)) };
+    });
+  }, [expenses, t]);
+
+  // Expense by category (pie)
+  const expenseByCat = useMemo(() => {
+    const map: Record<string, number> = {};
+    expenses.forEach(e => { map[e.category] = (map[e.category] || 0) + e.amount; });
+    return Object.entries(map)
+      .map(([cat, val]) => ({ name: t(`common.categories.${cat}`, cat), value: val, color: CAT_COLORS[cat] || '#64748b' }))
+      .sort((a, b) => b.value - a.value);
+  }, [expenses, t]);
+
+  const totalExpenseThisMonth = useMemo(() => {
+    const now = new Date();
+    const key = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    return expenses
+      .filter(e => {
+        const d = new Date(e.date);
+        const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        return k === key;
+      })
+      .reduce((sum, e) => sum + e.amount, 0);
+  }, [expenses]);
+
   if (loading) return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-pulse">
       {[...Array(4)].map((_, i) => <div key={i} className="h-28 bg-surface-hover rounded-2xl" />)}
@@ -131,31 +203,59 @@ export default function Analytics() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-bold text-text text-wrap-balance">Spending Analytics</h1>
-        <p className="text-text-muted mt-2">Understand your financial footprint at a glance.</p>
+        <h1 className="text-3xl font-bold text-text text-wrap-balance">{t('analytics.title')}</h1>
+        <p className="text-text-muted mt-2">{t('analytics.subtitle')}</p>
       </header>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title="Monthly Burn Rate" value={fmt.format(totalMonthly)} icon={DollarSign} desc="across all subscriptions" />
-        <KpiCard title="Yearly Projection" value={fmt.format(totalMonthly * 12)} icon={TrendingUp} desc="based on current subscriptions" />
-        <KpiCard title="Active Warranty Value" value={fmt.format(totalWarrantyValue)} icon={ShieldCheck} desc="receipts with valid warranties" />
-        <KpiCard title="Warranties Expiring" value={expiringCount.toString()} icon={AlertCircle} desc="within 30 days" highlight={expiringCount > 0} />
+        <KpiCard title={t('analytics.monthlyBurnRate')} value={fmt.format(totalMonthly)} icon={DollarSign} desc={t('analytics.allSubscriptions')} />
+        <KpiCard title={t('analytics.yearlyProjection')} value={fmt.format(totalMonthly * 12)} icon={TrendingUp} desc={t('analytics.basedOnCurrent')} />
+        <KpiCard title={t('analytics.activeWarrantyValue')} value={fmt.format(totalWarrantyValue)} icon={ShieldCheck} desc={t('analytics.validWarranties')} />
+        <KpiCard title={t('analytics.warrantiesExpiring')} value={expiringCount.toString()} icon={AlertCircle} desc={t('analytics.within30Days')} highlight={expiringCount > 0} />
       </div>
+
+      {/* Expense This Month KPI */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass border border-border rounded-2xl p-5">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 rounded-lg bg-red-500/10 text-red-400"><TrendingDown size={20} /></div>
+          <h2 className="text-lg font-semibold">{t('expenses.totalThisMonth')}</h2>
+          <span className="ml-auto text-3xl font-black text-red-400 tabular-nums">{fmt.format(totalExpenseThisMonth)}</span>
+        </div>
+        <p className="text-sm text-text-muted pl-11">{expenses.length} {t('expenses.transactions')}</p>
+      </motion.div>
 
       {/* Spending Forecast Bar Chart */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass border border-border rounded-2xl p-6">
-        <h2 className="text-xl font-semibold mb-6">6-Month Subscription Forecast</h2>
+        <h2 className="text-xl font-semibold mb-6">{t('analytics.forecast')}</h2>
         {subs.length === 0 ? (
-          <p className="text-text-muted text-sm">Add subscriptions to see your spending forecast.</p>
+          <p className="text-text-muted text-sm">{t('analytics.addSubsToSeeChart')}</p>
         ) : (
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={monthlyForecast} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="month" tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
-              <Bar dataKey="Subscriptions" fill="#6366f1" radius={[6, 6, 0, 0]} />
+              <Tooltip content={<CustomTooltip fmt={fmt} />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
+              <Bar dataKey={t('analytics.subsByCycle')} fill="#6366f1" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </motion.div>
+
+      {/* Expense Trend - last 6 months */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="glass border border-border rounded-2xl p-6">
+        <h2 className="text-xl font-semibold mb-6">{t('expenses.monthlySpend')}</h2>
+        {expenses.length === 0 ? (
+          <p className="text-text-muted text-sm">{t('expenses.noCategoryData')}</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={expenseTrend} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="month" tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
+              <Tooltip content={<CustomTooltip fmt={fmt} />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
+              <Bar dataKey={t('nav.expenses')} fill="#f43f5e" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -164,9 +264,9 @@ export default function Analytics() {
       {/* Pie Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass border border-border rounded-2xl p-6">
-          <h2 className="text-xl font-semibold mb-6">Subscriptions by Cycle</h2>
+          <h2 className="text-xl font-semibold mb-6">{t('analytics.subsByCycle')}</h2>
           {cycleData.length === 0 ? (
-            <p className="text-text-muted text-sm">No subscription data yet.</p>
+            <p className="text-text-muted text-sm">{t('analytics.noSubData')}</p>
           ) : (
             <ResponsiveContainer width="100%" height={240}>
               <PieChart>
@@ -175,7 +275,26 @@ export default function Analytics() {
                     <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v: any) => [`${v} subscription${v !== 1 ? 's' : ''}`, '']} />
+                <Tooltip formatter={(v: any) => [`${v}`, '']} />
+                <Legend wrapperStyle={{ fontSize: '13px', color: '#aaa' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="glass border border-border rounded-2xl p-6">
+          <h2 className="text-xl font-semibold mb-6">{t('expenses.spendingByCategory')}</h2>
+          {expenseByCat.length === 0 ? (
+            <p className="text-text-muted text-sm">{t('expenses.noCategoryData')}</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={240}>
+              <PieChart>
+                <Pie data={expenseByCat} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value">
+                  {expenseByCat.map((d, i) => (
+                    <Cell key={i} fill={d.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(v: any) => [fmt.format(v as number), '']} />
                 <Legend wrapperStyle={{ fontSize: '13px', color: '#aaa' }} />
               </PieChart>
             </ResponsiveContainer>
@@ -183,9 +302,9 @@ export default function Analytics() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass border border-border rounded-2xl p-6">
-          <h2 className="text-xl font-semibold mb-6">Receipts by Value Range</h2>
+          <h2 className="text-xl font-semibold mb-6">{t('analytics.receiptsByValue')}</h2>
           {costBrackets.length === 0 ? (
-            <p className="text-text-muted text-sm">No receipt data yet.</p>
+            <p className="text-text-muted text-sm">{t('analytics.noReceiptData')}</p>
           ) : (
             <ResponsiveContainer width="100%" height={240}>
               <PieChart>
@@ -194,7 +313,7 @@ export default function Analytics() {
                     <Cell key={i} fill={PIE_COLORS[(i + 2) % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v: any) => [`${v} receipt${v !== 1 ? 's' : ''}`, '']} />
+                <Tooltip formatter={(v: any) => [`${v}`, '']} />
                 <Legend wrapperStyle={{ fontSize: '13px', color: '#aaa' }} />
               </PieChart>
             </ResponsiveContainer>
@@ -202,32 +321,32 @@ export default function Analytics() {
         </motion.div>
       </div>
 
-      {/* Subscription List with monthly cost breakdown */}
+      {/* Subscription Cost Breakdown Table */}
       {subs.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass border border-border rounded-2xl overflow-hidden">
           <div className="p-6 border-b border-border">
-            <h2 className="text-xl font-semibold">Subscription Cost Breakdown</h2>
+            <h2 className="text-xl font-semibold">{t('analytics.costBreakdown')}</h2>
           </div>
           <table className="w-full text-left">
             <thead>
               <tr className="bg-surface-hover/50 border-b border-border">
-                <th className="p-4 font-medium text-text-muted">Service</th>
-                <th className="p-4 font-medium text-text-muted">Cycle</th>
-                <th className="p-4 font-medium text-text-muted text-right tabular-nums">Billed</th>
-                <th className="p-4 font-medium text-text-muted text-right tabular-nums">Monthly Equiv.</th>
+                <th className="p-4 font-medium text-text-muted">{t('analytics.service')}</th>
+                <th className="p-4 font-medium text-text-muted">{t('analytics.cycle')}</th>
+                <th className="p-4 font-medium text-text-muted text-right tabular-nums">{t('analytics.billed')}</th>
+                <th className="p-4 font-medium text-text-muted text-right tabular-nums">{t('analytics.monthlyEquiv')}</th>
               </tr>
             </thead>
             <tbody>
               {subs.map(s => (
                 <tr key={s._id} className="border-b border-border hover:bg-surface-hover/30 transition-colors">
                   <td className="p-4 font-medium">{s.serviceName}</td>
-                  <td className="p-4 text-text-muted capitalize">{s.billingCycle}</td>
+                  <td className="p-4 text-text-muted capitalize">{String(t(`subscriptions.${s.billingCycle}`, s.billingCycle))}</td>
                   <td className="p-4 text-right tabular-nums">{fmt.format(s.cost)}</td>
                   <td className="p-4 text-right tabular-nums text-primary font-semibold">{fmt.format(toMonthly(s.cost, s.billingCycle))}</td>
                 </tr>
               ))}
               <tr className="bg-primary/5">
-                <td colSpan={3} className="p-4 font-bold text-right">Total Monthly</td>
+                <td colSpan={3} className="p-4 font-bold text-right">{t('analytics.totalMonthly')}</td>
                 <td className="p-4 text-right font-black text-primary tabular-nums">{fmt.format(totalMonthly)}</td>
               </tr>
             </tbody>
