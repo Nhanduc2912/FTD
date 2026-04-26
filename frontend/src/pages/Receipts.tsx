@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, startTransition, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, Search, Trash2, AlertCircle, ChevronLeft, ChevronRight, Image } from 'lucide-react';
+import { Upload, Search, Trash2, AlertCircle, ChevronLeft, ChevronRight, Image } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import api from '../api';
@@ -234,8 +234,8 @@ export default function Receipts() {
             ) : filteredReceipts.length === 0 ? (
               <tr>
                 <td colSpan={6} className="p-12 text-center text-text-muted">
-                  <FileText size={40} className="mx-auto mb-3 opacity-20" aria-hidden="true" />
-                  <p>
+                  <img src="/images/empty_receipts.png" alt="Empty receipts" className="w-32 h-32 mx-auto mb-4 opacity-80" />
+                  <p className="text-lg font-medium">
                     {searchTerm || activeCategory !== 'All'
                       ? t('receipts.noResultsFiltered')
                       : t('receipts.noReceipts')}

@@ -32,9 +32,12 @@ export default function WelcomeBanner({ onDismiss }: WelcomeBannerProps) {
         <X size={16} aria-hidden="true" />
       </button>
 
-      <div className="mb-5">
-        <h2 className="text-xl font-bold gradient-text mb-1">{t('onboarding.title')}</h2>
-        <p className="text-text-muted text-sm">{t('onboarding.subtitle')}</p>
+      <div className="flex items-center gap-4 mb-5">
+        <img src="/images/welcome_mascot.png" alt="Mascot" className="w-16 h-16 object-contain hidden sm:block drop-shadow-xl" />
+        <div>
+          <h2 className="text-xl font-bold gradient-text mb-1">{t('onboarding.title')}</h2>
+          <p className="text-text-muted text-sm">{t('onboarding.subtitle')}</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

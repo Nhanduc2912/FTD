@@ -309,8 +309,8 @@ export default function Expenses() {
               ))
             ) : filtered.length === 0 ? (
               <div className="p-12 text-center text-text-muted">
-                <TrendingDown size={40} className="mx-auto mb-3 opacity-20" aria-hidden="true" />
-                <p>{search ? t('expenses.noExpensesFilter') : t('expenses.noExpenses')}</p>
+                <img src="/images/empty_expenses.png" alt="Empty expenses" className="w-24 h-24 mx-auto mb-4 opacity-80" />
+                <p className="font-medium">{search ? t('expenses.noExpensesFilter') : t('expenses.noExpenses')}</p>
               </div>
             ) : (
               filtered.map((exp, i) => (

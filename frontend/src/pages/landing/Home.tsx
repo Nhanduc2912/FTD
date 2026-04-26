@@ -1,4 +1,4 @@
-﻿import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
   Receipt, CreditCard, BarChart2, Wallet, ShieldCheck, Bell,
@@ -78,58 +78,77 @@ export default function LandingHome() {
     <div className="overflow-x-hidden">
 
       {/* ── Hero ─────────────────────────────────────────────── */}
-      <section className="relative min-h-[92vh] flex flex-col items-center justify-center text-center px-4 py-24">
+      <section className="relative min-h-[92vh] flex items-center px-4 py-24 lg:py-0 overflow-hidden">
         {/* Background glow */}
         <div className="hero-glow absolute inset-0 pointer-events-none" aria-hidden="true" />
         <div className="absolute top-1/3 left-1/4 w-80 h-80 bg-primary/15 rounded-full blur-[120px] pointer-events-none" aria-hidden="true" />
         <div className="absolute top-1/2 right-1/4 w-64 h-64 bg-violet-500/10 rounded-full blur-[100px] pointer-events-none" aria-hidden="true" />
 
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="relative z-10 max-w-4xl"
-        >
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm font-medium mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
-            Free to use — No credit card needed
-          </div>
+        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center relative z-10">
+          {/* Left Text */}
+          <motion.div
+            initial={{ opacity: 0, x: -40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7 }}
+            className="max-w-2xl text-center lg:text-left mx-auto lg:mx-0"
+          >
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-sm font-medium mb-8">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
+              Free to use — No credit card needed
+            </div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.05] text-wrap-balance mb-6">
-            Take Control of Your{' '}
-            <span className="gradient-text">Financial Life</span>
-          </h1>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.05] text-wrap-balance mb-6">
+              Take Control of Your <br className="hidden lg:block" />
+              <span className="gradient-text">Financial Life</span>
+            </h1>
 
-          <p className="text-xl text-text-muted max-w-2xl mx-auto leading-relaxed mb-10 text-wrap-pretty">
-            Track receipts before warranties expire, cut subscriptions silently draining your account,
-            and understand where every dollar goes — all in one beautiful dashboard.
-          </p>
+            <p className="text-xl text-text-muted leading-relaxed mb-10 text-wrap-pretty max-w-xl mx-auto lg:mx-0">
+              Track receipts before warranties expire, cut subscriptions silently draining your account,
+              and understand where every dollar goes — all in one beautiful dashboard.
+            </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              to="/register"
-              className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white font-bold px-8 py-4 rounded-2xl shadow-xl shadow-primary/30 transition-colors text-lg"
-            >
-              Start for Free <ChevronRight size={20} aria-hidden="true" />
-            </Link>
-            <Link
-              to="/features"
-              className="inline-flex items-center gap-2 text-text-muted hover:text-white border border-border hover:border-primary/40 px-8 py-4 rounded-2xl transition-[color,border-color] text-lg font-medium"
-            >
-              See All Features <ArrowRight size={18} aria-hidden="true" />
-            </Link>
-          </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+              <Link
+                to="/register"
+                className="inline-flex items-center gap-2 bg-primary hover:bg-primary-dark text-white font-bold px-8 py-4 rounded-2xl shadow-xl shadow-primary/30 transition-colors text-lg"
+              >
+                Start for Free <ChevronRight size={20} aria-hidden="true" />
+              </Link>
+              <Link
+                to="/features"
+                className="inline-flex items-center gap-2 text-text-muted hover:text-white border border-border hover:border-primary/40 px-8 py-4 rounded-2xl transition-[color,border-color] text-lg font-medium"
+              >
+                See All Features <ArrowRight size={18} aria-hidden="true" />
+              </Link>
+            </div>
 
-          {/* Trust signals */}
-          <p className="mt-6 text-text-muted text-sm flex items-center justify-center gap-2 flex-wrap">
-            <CheckCircle2 size={14} className="text-green-400" aria-hidden="true" /> No spam
-            <span aria-hidden="true">·</span>
-            <CheckCircle2 size={14} className="text-green-400" aria-hidden="true" /> Cancel anytime
-            <span aria-hidden="true">·</span>
-            <CheckCircle2 size={14} className="text-green-400" aria-hidden="true" /> Data encrypted
-          </p>
-        </motion.div>
+            {/* Trust signals */}
+            <p className="mt-6 text-text-muted text-sm flex items-center justify-center lg:justify-start gap-3 flex-wrap">
+              <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-green-400" aria-hidden="true" /> No spam</span>
+              <span aria-hidden="true" className="opacity-40">·</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-green-400" aria-hidden="true" /> Cancel anytime</span>
+              <span aria-hidden="true" className="opacity-40">·</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 size={14} className="text-green-400" aria-hidden="true" /> Data encrypted</span>
+            </p>
+          </motion.div>
+
+          {/* Right Image */}
+          <motion.div
+            initial={{ opacity: 0, x: 40, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="relative hidden lg:block"
+          >
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-violet-500/20 rounded-3xl blur-[80px] -z-10" />
+            <img 
+              src="/images/hero_illustration.png" 
+              alt="3D abstract financial dashboard" 
+              className="w-full object-contain drop-shadow-2xl animate-[float_6s_ease-in-out_infinite]"
+              style={{ maxHeight: '600px' }}
+            />
+          </motion.div>
+        </div>
       </section>
 
       {/* ── Stats bar ────────────────────────────────────────── */}

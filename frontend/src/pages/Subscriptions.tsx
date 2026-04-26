@@ -161,8 +161,8 @@ export default function Subscriptions() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 text-text-muted">
-          <Scissors size={48} className="mx-auto mb-4 opacity-30" aria-hidden="true" />
-          <p className="text-lg">{t('subscriptions.noSubscriptions')}</p>
+          <img src="/images/empty_subs.png" alt="Empty subscriptions" className="w-32 h-32 mx-auto mb-4 opacity-80" />
+          <p className="text-lg font-medium">{t('subscriptions.noSubscriptions')}</p>
           <p className="text-sm mt-1">{t('subscriptions.noSubscriptionsHint')}</p>
         </div>
       ) : (
