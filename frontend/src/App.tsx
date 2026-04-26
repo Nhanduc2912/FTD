@@ -5,6 +5,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Subscriptions from './pages/Subscriptions';
 import Receipts from './pages/Receipts';
+import Analytics from './pages/Analytics';
+import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -18,6 +20,8 @@ function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/receipts" element={<Receipts />} />
         <Route path="/subscriptions" element={<Subscriptions />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/settings" element={<Settings />} />
       </Route>
 
       {/* 404 Catch-all */}

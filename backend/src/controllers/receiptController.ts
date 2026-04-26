@@ -19,7 +19,7 @@ export const getReceipts = async (req: AuthRequest, res: Response): Promise<void
 // @access Private
 export const createReceipt = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { storeName, purchaseDate, totalAmount, expiryDate, notes } = req.body;
+    const { storeName, purchaseDate, totalAmount, expiryDate, notes, category } = req.body;
 
     // ─── Validation ────────────────────────────────────────
     if (!storeName || storeName.trim().length < 2) {
@@ -61,6 +61,7 @@ export const createReceipt = async (req: AuthRequest, res: Response): Promise<vo
       purchaseDate,
       totalAmount: amount,
       imageUrl,
+      category: category || 'Other',
       expiryDate: expiryDate || undefined,
       notes: notes?.trim(),
     });

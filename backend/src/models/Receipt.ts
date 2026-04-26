@@ -1,11 +1,14 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+export type ReceiptCategory = 'Electronics' | 'Appliances' | 'Clothing' | 'Food' | 'Services' | 'Health' | 'Other';
+
 export interface IReceipt extends Document {
   userId: mongoose.Types.ObjectId;
   storeName: string;
   purchaseDate: Date;
   totalAmount: number;
   imageUrl: string;
+  category: ReceiptCategory;
   expiryDate?: Date;
   notes?: string;
   createdAt: Date;
@@ -36,6 +39,11 @@ const ReceiptSchema = new Schema<IReceipt>(
     imageUrl: {
       type: String,
       required: true,
+    },
+    category: {
+      type: String,
+      enum: ['Electronics', 'Appliances', 'Clothing', 'Food', 'Services', 'Health', 'Other'],
+      default: 'Other',
     },
     expiryDate: {
       type: Date,
