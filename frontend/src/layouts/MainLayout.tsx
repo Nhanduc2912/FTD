@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import {
   Receipt, CreditCard, LayoutDashboard, LogOut, BarChart2,
-  Settings, Bell, X, Menu, Wallet, ChevronLeft, ChevronRight,
+  Settings, Bell, X, Menu, Wallet, ChevronLeft, ChevronRight, Home,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -294,6 +294,15 @@ function SidebarContent({
 
       {/* Bottom actions */}
       <div className="p-2 border-t border-border space-y-1">
+        <Link
+          to="/"
+          title={collapsed ? 'Back to Home' : undefined}
+          className={`flex items-center gap-3 px-3 py-3 w-full rounded-xl text-text-muted hover:text-white hover:bg-surface-hover transition-colors ${collapsed ? 'justify-center' : ''}`}
+          aria-label="Back to landing page"
+        >
+          <Home size={20} aria-hidden="true" />
+          {!collapsed && <span className="font-medium">Home</span>}
+        </Link>
         <Link
           to="/app/settings"
           aria-current={location.pathname === '/app/settings' ? 'page' : undefined}

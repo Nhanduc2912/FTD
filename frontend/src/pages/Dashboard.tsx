@@ -44,9 +44,9 @@ export default function Dashboard() {
           api.get('/expenses'),
         ]);
 
-        const subs: any[]     = subsRes.data;
-        const receipts: any[] = receiptsRes.data;
-        const expenses: any[] = expRes.data;
+        const subs: any[]     = Array.isArray(subsRes.data) ? subsRes.data : (subsRes.data.data ?? []);
+        const receipts: any[] = Array.isArray(receiptsRes.data) ? receiptsRes.data : (receiptsRes.data.data ?? []);
+        const expenses: any[] = Array.isArray(expRes.data) ? expRes.data : (expRes.data.data ?? []);
         const today = new Date();
 
         const subsCost = subs.reduce((acc, sub) => acc + (sub.cost || 0), 0);

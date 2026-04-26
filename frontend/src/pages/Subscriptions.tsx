@@ -48,7 +48,8 @@ export default function Subscriptions() {
   const fetchSubs = async () => {
     try {
       const res = await api.get('/subscriptions');
-      setSubs(res.data);
+      // API now returns paginated {data, page, totalPages, total}
+      setSubs(Array.isArray(res.data) ? res.data : (res.data.data ?? []));
     } catch {
       setError(t('common.error'));
     } finally {

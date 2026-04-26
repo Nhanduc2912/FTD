@@ -1,7 +1,8 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronRight } from 'lucide-react';
+import { Menu, X, ChevronRight, LayoutDashboard, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const NAV_LINKS = [
   { label: 'Features', href: '/features' },
@@ -12,8 +13,10 @@ const NAV_LINKS = [
 
 export default function LandingLayout() {
   const location = useLocation();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const { isAuthenticated, isLoading, user, logout } = useAuth();
+  const [menuOpen,  setMenuOpen]  = useState(false);
+  const [scrolled,  setScrolled]  = useState(false);
+  const [userMenu,  setUserMenu]  = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -21,8 +24,8 @@ export default function LandingLayout() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close menu on route change
-  useEffect(() => setMenuOpen(false), [location.pathname]);
+  // Close menus on route change
+  useEffect(() => { setMenuOpen(false); setUserMenu(false); }, [location.pathname]);
 
   return (
     <div className="min-h-screen flex flex-col bg-bg text-text">
@@ -68,17 +71,68 @@ export default function LandingLayout() {
             ))}
           </nav>
 
-          {/* Desktop CTA */}
+          {/* Desktop CTA — auth-aware */}
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/login" className="text-sm font-medium text-text-muted hover:text-white transition-colors px-4 py-2">
-              Sign In
-            </Link>
-            <Link
-              to="/register"
-              className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-lg shadow-primary/25"
-            >
-              Get Started Free <ChevronRight size={14} aria-hidden="true" />
-            </Link>
+            {isLoading ? (
+              // Skeleton while checking auth
+              <div className="w-24 h-9 bg-surface-hover rounded-xl animate-pulse" />
+            ) : isAuthenticated ? (
+              // ── LOGGED IN STATE ──
+              <div className="flex items-center gap-3">
+                {/* Avatar + name dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setUserMenu(v => !v)}
+                    aria-expanded={userMenu}
+                    aria-haspopup="true"
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-surface-hover transition-colors text-sm"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary" aria-hidden="true">
+                      {user?.name?.[0]?.toUpperCase() ?? 'U'}
+                    </div>
+                    <span className="font-medium max-w-[120px] truncate">{user?.name}</span>
+                  </button>
+                  <AnimatePresence>
+                    {userMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-12 w-44 bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden z-50"
+                      >
+                        <button
+                          onClick={() => { logout(); setUserMenu(false); }}
+                          className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                        >
+                          <LogOut size={14} aria-hidden="true" /> Sign out
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                {/* Go to App button */}
+                <Link
+                  to="/app"
+                  className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-lg shadow-primary/25"
+                >
+                  <LayoutDashboard size={14} aria-hidden="true" /> Go to App
+                </Link>
+              </div>
+            ) : (
+              // ── GUEST STATE ──
+              <>
+                <Link to="/login" className="text-sm font-medium text-text-muted hover:text-white transition-colors px-4 py-2">
+                  Sign In
+                </Link>
+                <Link
+                  to="/register"
+                  className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-lg shadow-primary/25"
+                >
+                  Get Started Free <ChevronRight size={14} aria-hidden="true" />
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -113,8 +167,21 @@ export default function LandingLayout() {
                   </Link>
                 ))}
                 <hr className="border-border my-2" />
-                <Link to="/login"    className="px-4 py-3 rounded-xl text-sm font-medium text-text-muted hover:text-white hover:bg-surface-hover transition-colors">Sign In</Link>
-                <Link to="/register" className="px-4 py-3 rounded-xl text-sm font-semibold bg-primary hover:bg-primary-dark text-white transition-colors text-center">Get Started Free</Link>
+                {isAuthenticated ? (
+                  <>
+                    <Link to="/app" className="px-4 py-3 rounded-xl text-sm font-semibold bg-primary hover:bg-primary-dark text-white transition-colors text-center flex items-center justify-center gap-2">
+                      <LayoutDashboard size={16} aria-hidden="true" /> Go to App
+                    </Link>
+                    <button onClick={() => { logout(); setMenuOpen(false); }} className="px-4 py-3 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors text-left">
+                      Sign out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login"    className="px-4 py-3 rounded-xl text-sm font-medium text-text-muted hover:text-white hover:bg-surface-hover transition-colors">Sign In</Link>
+                    <Link to="/register" className="px-4 py-3 rounded-xl text-sm font-semibold bg-primary hover:bg-primary-dark text-white transition-colors text-center">Get Started Free</Link>
+                  </>
+                )}
               </div>
             </motion.div>
           )}
