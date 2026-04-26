@@ -50,19 +50,21 @@ export const startCronJobs = () => {
         const user = await User.findById(userId);
         if (!user) continue;
 
-        const { subs, receipts } = alertsByUser[userId];
+        const alertData = alertsByUser[userId];
+        if (!alertData) continue;
+        const { subs, receipts } = alertData;
         
         let html = `<h2>Hello ${user.name}, you have items requiring your attention!</h2>`;
         
         if (subs.length > 0) {
           html += `<h3>🔄 Subscriptions Renewing Soon:</h3><ul>`;
-          subs.forEach(s => html += `<li>${s.name} - $${s.amount} on ${new Date(s.nextBillingDate).toLocaleDateString()}</li>`);
+          subs.forEach((s: any) => html += `<li>${s.name} - $${s.amount} on ${new Date(s.nextBillingDate).toLocaleDateString()}</li>`);
           html += `</ul>`;
         }
 
         if (receipts.length > 0) {
           html += `<h3>🧾 Warranties Expiring Soon:</h3><ul>`;
-          receipts.forEach(r => html += `<li>${r.storeName} - ${new Date(r.expiryDate).toLocaleDateString()}</li>`);
+          receipts.forEach((r: any) => html += `<li>${r.storeName} - ${new Date(r.expiryDate).toLocaleDateString()}</li>`);
           html += `</ul>`;
         }
 
