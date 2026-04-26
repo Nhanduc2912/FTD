@@ -12,6 +12,7 @@ import {
   ArrowRight,
   CheckCircle2,
 } from "lucide-react";
+import Hero3DVisual from "../../components/Hero3DVisual";
 
 // ── Static data (hoisted outside component – rendering-hoist-jsx) ───────────
 const FEATURES = [
@@ -173,23 +174,14 @@ export default function LandingHome() {
             </p>
           </motion.div>
 
-          {/* Right Image */}
+          {/* Right 3D Visual */}
           <motion.div
             initial={{ opacity: 0, x: 40, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.1 }}
             className="relative hidden lg:block"
           >
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-violet-500/20 rounded-3xl blur-[80px] -z-10" />
-            <div className="relative rounded-3xl overflow-hidden border border-border shadow-2xl">
-              <div className="absolute inset-0 bg-primary/10 mix-blend-overlay pointer-events-none" />
-              <img 
-                src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2426&auto=format&fit=crop" 
-                alt="Financial dashboard on laptop" 
-                className="w-full h-full object-cover"
-                style={{ maxHeight: '600px' }}
-              />
-            </div>
+            <Hero3DVisual />
           </motion.div>
         </div>
       </section>
