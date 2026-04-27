@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import api from "../api";
 import UpgradePrompt from "../components/UpgradePrompt";
 import { useCurrency } from '../context/CurrencyContext';
+import { triggerConfetti } from '../utils/confetti';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface ISubscription {
@@ -76,6 +77,7 @@ export default function Subscriptions() {
   const handleAddSuccess = () => {
     setIsModalOpen(false);
     fetchSubs();
+    triggerConfetti();
     toast.success(t("subscriptions.addSubscriptionBtn"));
   };
 

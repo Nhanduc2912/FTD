@@ -25,6 +25,7 @@ import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import api from "../api";
 import { useCurrency } from '../context/CurrencyContext';
+import { triggerConfetti } from '../utils/confetti';
 
 // ── Config ─────────────────────────────────────────────────────────────────
 const EXPENSE_CATEGORIES = [
@@ -216,6 +217,7 @@ export default function Expenses() {
         date: new Date().toISOString().split("T")[0],
         currency: "USD",
       });
+      triggerConfetti();
       toast.success(t("expenses.addSuccess"));
       fetchData();
       fetchTrend();
