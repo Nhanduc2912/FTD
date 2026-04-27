@@ -24,6 +24,7 @@ const Subscriptions = lazy(() => import('./pages/Subscriptions'));
 const Analytics     = lazy(() => import('./pages/Analytics'));
 const Expenses      = lazy(() => import('./pages/Expenses'));
 const Settings      = lazy(() => import('./pages/Settings'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
 function PageLoader() {
   return (
@@ -59,6 +60,7 @@ function App() {
         <Route path="analytics"       element={<Suspense fallback={<PageLoader />}><Analytics /></Suspense>} />
         <Route path="expenses"        element={<Suspense fallback={<PageLoader />}><Expenses /></Suspense>} />
         <Route path="settings"        element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
+        <Route path="admin"           element={<Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>} />
       </Route>
 
       {/* Legacy redirect: old routes → new /app prefix */}

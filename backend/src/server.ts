@@ -7,6 +7,7 @@ import authRoutes from './routes/authRoutes';
 import receiptRoutes from './routes/receiptRoutes';
 import subscriptionRoutes from './routes/subscriptionRoutes';
 import expenseRoutes from './routes/expenseRoutes';
+import adminRoutes from './routes/adminRoutes';
 import { startCronJobs } from './jobs/cron';
 import { authLimiter, apiLimiter } from './middleware/rateLimiter';
 
@@ -40,6 +41,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/receipts', receiptRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/admin', adminRoutes);
 
 // ── Health Check ─────────────────────────────────────────────────────────────
 import mongoose from 'mongoose';

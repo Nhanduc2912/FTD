@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Outlet, Link, useLocation, Navigate } from 'react-router-dom';
 import {
   Receipt, CreditCard, LayoutDashboard, LogOut, BarChart2,
-  Settings, Bell, X, Menu, Wallet, ChevronLeft, ChevronRight, Home,
+  Settings, Bell, X, Menu, Wallet, ChevronLeft, ChevronRight, Home, Shield,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -89,7 +89,7 @@ export default function MainLayout() {
             <SidebarContent
               location={location} logout={logout}
               onClose={() => setSidebarOpen(false)}
-              t={t} collapsed={false}
+              t={t} collapsed={false} user={user}
             />
           </motion.aside>
         )}
@@ -105,7 +105,7 @@ export default function MainLayout() {
         <SidebarContent
           location={location} logout={logout}
           t={t} collapsed={sidebarCollapsed}
-          onToggleCollapse={toggleCollapse}
+          onToggleCollapse={toggleCollapse} user={user}
         />
       </motion.aside>
 
@@ -211,7 +211,7 @@ export default function MainLayout() {
 
 // ── SidebarContent ──────────────────────────────────────────────────────────
 function SidebarContent({
-  location, logout, onClose, t, collapsed, onToggleCollapse,
+  location, logout, onClose, t, collapsed, onToggleCollapse, user
 }: {
   location: ReturnType<typeof useLocation>;
   logout: () => void;
@@ -219,6 +219,7 @@ function SidebarContent({
   t: (key: string) => string;
   collapsed: boolean;
   onToggleCollapse?: () => void;
+  user: any;
 }) {
   const isActive = (path: string) =>
     path === '/app' ? location.pathname === '/app' : location.pathname.startsWith(path);
@@ -290,6 +291,25 @@ function SidebarContent({
             </Link>
           );
         })}
+        {user?.role === 'admin' && (
+          <Link
+            to="/app/admin"
+            aria-current={isActive('/app/admin') ? 'page' : undefined}
+            title={collapsed ? t('nav.adminPanel') : undefined}
+            className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-[background-color,color] duration-200 relative ${
+              collapsed ? 'justify-center' : ''
+            } ${isActive('/app/admin') ? 'text-white' : 'text-text-muted hover:text-white hover:bg-surface-hover'}`}
+          >
+            {isActive('/app/admin') && (
+              <motion.div
+                layoutId="sidebar-active"
+                className="absolute inset-0 bg-primary/20 rounded-xl border border-primary/30"
+              />
+            )}
+            <Shield size={20} className="relative z-10 flex-shrink-0" aria-hidden="true" />
+            {!collapsed && <span className="font-medium relative z-10">{t('nav.adminPanel')}</span>}
+          </Link>
+        )}
       </nav>
 
       {/* Bottom actions */}

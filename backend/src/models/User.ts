@@ -7,6 +7,11 @@ export interface IUser extends Document {
   email: string;
   passwordHash: string;
   name?: string;
+  // ── Admin & Security ─────────────────────────────────────────────────────
+  role: 'user' | 'admin';
+  status: 'active' | 'suspended';
+  failedLoginAttempts: number;
+  lockUntil?: Date;
   // ── P3: Billing ──────────────────────────────────────────────────────────
   plan: UserPlan;
   trialEndsAt?: Date;
@@ -34,6 +39,24 @@ const UserSchema = new Schema<IUser>(
     name: {
       type: String,
       trim: true,
+    },
+    // ── Admin & Security ───────────────────────────────────────────────────
+    role: {
+      type: String,
+      enum: ['user', 'admin'],
+      default: 'user',
+    },
+    status: {
+      type: String,
+      enum: ['active', 'suspended'],
+      default: 'active',
+    },
+    failedLoginAttempts: {
+      type: Number,
+      default: 0,
+    },
+    lockUntil: {
+      type: Date,
     },
     // ── P3: Billing ────────────────────────────────────────────────────────
     plan: {

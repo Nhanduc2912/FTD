@@ -25,9 +25,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
       localStorage.removeItem('token');
-      // Force reload to redirect to login if token is expired/invalid
+      // Force reload to redirect to login if token is expired/invalid/suspended
       if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
          window.location.href = '/login';
       }

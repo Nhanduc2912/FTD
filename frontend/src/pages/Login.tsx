@@ -26,6 +26,8 @@ export default function Login() {
         _id: response.data._id,
         name: response.data.name,
         email: response.data.email,
+        role: response.data.role || 'user',
+        status: response.data.status || 'active',
       });
       navigate("/app");
     } catch (err: any) {

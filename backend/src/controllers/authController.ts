@@ -101,6 +101,8 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
       _id: user._id,
       email: user.email,
       name: user.name,
+      role: user.role,
+      status: user.status,
       plan: user.plan,
       subscriptionStatus: user.subscriptionStatus,
       trialEndsAt: user.trialEndsAt,

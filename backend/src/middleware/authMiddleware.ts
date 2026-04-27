@@ -20,6 +20,11 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
         return;
       }
       
+      if (user.status === 'suspended') {
+        res.status(403).json({ message: 'Account is suspended' });
+        return;
+      }
+      
       req.user = user;
       next();
     } catch (error) {
@@ -30,5 +35,13 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
   } else {
     res.status(401).json({ message: 'Not authorized, no token' });
     return;
+  }
+};
+
+export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403).json({ message: 'Not authorized as an admin' });
   }
 };

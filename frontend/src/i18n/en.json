@@ -9,7 +9,49 @@
     "logout": "Log Out",
     "notifications": "Notifications",
     "markAllRead": "Mark all read",
-    "noNotifications": "All clear! No expiring items."
+    "noNotifications": "All clear! No expiring items.",
+    "adminPanel": "Admin Panel"
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "subtitle": "Manage users, subscriptions, and system settings.",
+    "tabs": {
+      "overview": "Overview",
+      "users": "Users",
+      "billing": "Billing",
+      "settings": "Settings"
+    },
+    "overview": {
+      "totalUsers": "Total Users",
+      "proUsers": "Pro Users",
+      "activeSubscriptions": "Active Subscriptions",
+      "trialing": "Trialing",
+      "canceled": "Canceled",
+      "pastDue": "Past Due",
+      "databaseStats": "Database Stats",
+      "serverUptime": "Server Uptime"
+    },
+    "users": {
+      "searchPlaceholder": "Search by name or email...",
+      "role": "Role",
+      "status": "Status",
+      "plan": "Plan",
+      "failedAttempts": "Failed Logins",
+      "locked": "Locked",
+      "actions": "Actions",
+      "edit": "Edit",
+      "suspend": "Suspend",
+      "activate": "Reactivate",
+      "unlock": "Unlock",
+      "delete": "Delete",
+      "deleteConfirm": "This will permanently delete the user and all their data."
+    },
+    "settings": {
+      "maintenanceMode": "Maintenance Mode",
+      "announcementBanner": "Announcement Banner",
+      "saveSettings": "Save Settings",
+      "saving": "Saving..."
+    }
   },
   "dashboard": {
     "title": "Dashboard Overview",

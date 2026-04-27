@@ -9,7 +9,49 @@
     "logout": "Đăng xuất",
     "notifications": "Thông báo",
     "markAllRead": "Đánh dấu đã đọc",
-    "noNotifications": "Không có thông báo mới."
+    "noNotifications": "Không có thông báo mới.",
+    "adminPanel": "Quản trị viên"
+  },
+  "admin": {
+    "title": "Bảng điều khiển Quản trị",
+    "subtitle": "Quản lý người dùng, đăng ký và cài đặt hệ thống.",
+    "tabs": {
+      "overview": "Tổng quan",
+      "users": "Người dùng",
+      "billing": "Thanh toán",
+      "settings": "Cài đặt"
+    },
+    "overview": {
+      "totalUsers": "Tổng người dùng",
+      "proUsers": "Người dùng Pro",
+      "activeSubscriptions": "Đăng ký đang hoạt động",
+      "trialing": "Đang dùng thử",
+      "canceled": "Đã hủy",
+      "pastDue": "Quá hạn",
+      "databaseStats": "Thống kê cơ sở dữ liệu",
+      "serverUptime": "Thời gian hoạt động máy chủ"
+    },
+    "users": {
+      "searchPlaceholder": "Tìm theo tên hoặc email...",
+      "role": "Vai trò",
+      "status": "Trạng thái",
+      "plan": "Gói",
+      "failedAttempts": "Đăng nhập sai",
+      "locked": "Đã khóa",
+      "actions": "Thao tác",
+      "edit": "Sửa",
+      "suspend": "Đình chỉ",
+      "activate": "Kích hoạt lại",
+      "unlock": "Mở khóa",
+      "delete": "Xóa",
+      "deleteConfirm": "Thao tác này sẽ xóa vĩnh viễn người dùng và toàn bộ dữ liệu của họ."
+    },
+    "settings": {
+      "maintenanceMode": "Chế độ bảo trì",
+      "announcementBanner": "Biểu ngữ thông báo",
+      "saveSettings": "Lưu cài đặt",
+      "saving": "Đang lưu..."
+    }
   },
   "dashboard": {
     "title": "Tổng quan",
