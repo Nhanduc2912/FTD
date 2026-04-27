@@ -11,11 +11,35 @@ import { useCurrency } from '../context/CurrencyContext';
 const LANGUAGES = [
   { code: 'en', label: 'English',     flag: '🇺🇸' },
   { code: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' },
+  { code: 'es', label: 'Español',    flag: '🇪🇸' },
+  { code: 'fr', label: 'Français',   flag: '🇫🇷' },
+  { code: 'de', label: 'Deutsch',    flag: '🇩🇪' },
+  { code: 'zh', label: '中文',       flag: '🇨🇳' },
+  { code: 'ja', label: '日本語',     flag: '🇯🇵' },
+  { code: 'ko', label: '한국어',     flag: '🇰🇷' },
+  { code: 'hi', label: 'हिन्दी',     flag: '🇮🇳' },
+  { code: 'ar', label: 'العربية',    flag: '🇸🇦' },
+  { code: 'pt', label: 'Português',  flag: '🇵🇹' },
+  { code: 'ru', label: 'Русский',    flag: '🇷🇺' },
 ];
 
 const CURRENCIES = [
   { code: 'USD', label: 'USD ($)', symbol: '$' },
+  { code: 'EUR', label: 'EUR (€)', symbol: '€' },
+  { code: 'GBP', label: 'GBP (£)', symbol: '£' },
+  { code: 'JPY', label: 'JPY (¥)', symbol: '¥' },
+  { code: 'CNY', label: 'CNY (¥)', symbol: '¥' },
+  { code: 'INR', label: 'INR (₹)', symbol: '₹' },
+  { code: 'AUD', label: 'AUD (A$)', symbol: 'A$' },
+  { code: 'CAD', label: 'CAD (C$)', symbol: 'C$' },
+  { code: 'CHF', label: 'CHF (Fr)', symbol: 'Fr' },
   { code: 'VND', label: 'VND (₫)', symbol: '₫' },
+  { code: 'SGD', label: 'SGD (S$)', symbol: 'S$' },
+  { code: 'NZD', label: 'NZD (NZ$)', symbol: 'NZ$' },
+  { code: 'KRW', label: 'KRW (₩)', symbol: '₩' },
+  { code: 'BRL', label: 'BRL (R$)', symbol: 'R$' },
+  { code: 'MXN', label: 'MXN ($)', symbol: '$' },
+  { code: 'ZAR', label: 'ZAR (R)', symbol: 'R' },
 ];
 
 // Free plan limits (mirrors backend planLimits.ts)
@@ -209,7 +233,7 @@ export default function Settings() {
           {/* Currency Selection */}
           <div>
             <p className="text-sm text-text-muted mb-4">{t('settings.currency')}</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-1">
               {CURRENCIES.map(curr => (
                 <button
                   key={curr.code}
