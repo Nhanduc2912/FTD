@@ -1,7 +1,14 @@
+---
+description: Core guidelines and coding standards for the FTD project.
+activation: Always On
+---
+
 # AGENTS.md — FTD Agent Operating Manual
 
 > **Read this file in full before writing a single line of code.**
 > This document defines the non-negotiable workflow every AI agent must follow when working on the FTD codebase. It was derived from real development sessions on this project and reflects what actually works here.
+
+---
 
 ---
 
@@ -122,18 +129,18 @@ FTD/
 
 ## 3. Tech Stack & Versions
 
-| Layer     | Technology          | Notes |
-|-----------|---------------------|-------|
-| Frontend  | React 19 + Vite 8   | `npm run dev` → port 5173 |
-| Styling   | Tailwind CSS v4     | Uses `@theme` tokens in `index.css`, NOT `tailwind.config.js` |
-| Animation | Framer Motion       | **Do not pass `ease: 'easeOut'` as a string** — TS error. Omit `ease` or use cubic-bezier array |
-| Charts    | Recharts            | `ResponsiveContainer` wraps all charts |
-| i18n      | react-i18next       | `useTranslation()` hook everywhere |
-| Auth      | JWT in localStorage | Key: `token`. Context: `AuthContext` |
-| HTTP      | Axios               | Instance in `src/api.ts` auto-attaches `Authorization: Bearer` |
-| Backend   | Express + TypeScript| Port 5000 |
-| DB        | MongoDB Atlas       | Mongoose ODM |
-| Runtime   | Node + ts-node-dev  | `npm run dev` in `/backend` |
+| Layer     | Technology           | Notes                                                                                           |
+| --------- | -------------------- | ----------------------------------------------------------------------------------------------- |
+| Frontend  | React 19 + Vite 8    | `npm run dev` → port 5173                                                                       |
+| Styling   | Tailwind CSS v4      | Uses `@theme` tokens in `index.css`, NOT `tailwind.config.js`                                   |
+| Animation | Framer Motion        | **Do not pass `ease: 'easeOut'` as a string** — TS error. Omit `ease` or use cubic-bezier array |
+| Charts    | Recharts             | `ResponsiveContainer` wraps all charts                                                          |
+| i18n      | react-i18next        | `useTranslation()` hook everywhere                                                              |
+| Auth      | JWT in localStorage  | Key: `token`. Context: `AuthContext`                                                            |
+| HTTP      | Axios                | Instance in `src/api.ts` auto-attaches `Authorization: Bearer`                                  |
+| Backend   | Express + TypeScript | Port 5000                                                                                       |
+| DB        | MongoDB Atlas        | Mongoose ODM                                                                                    |
+| Runtime   | Node + ts-node-dev   | `npm run dev` in `/backend`                                                                     |
 
 ---
 
@@ -178,7 +185,7 @@ If port 5173 is busy, Vite auto-increments to 5174, 5175, etc. Check the termina
 Run this checklist mentally before touching any file:
 
 1. **Read relevant existing files first.** Never assume what a file contains.
-2. **Check `en.json`** — if you need translated text, the key must already exist or you must add it to *both* `en.json` and `vi.json`.
+2. **Check `en.json`** — if you need translated text, the key must already exist or you must add it to _both_ `en.json` and `vi.json`.
 3. **Confirm the route** — all app pages live under `/app/*`. Public pages have no `/app` prefix.
 4. **Check for `useTranslation`** — every page/component that renders user-visible text must use `const { t, i18n } = useTranslation()`.
 5. **Check for `Intl` usage** — never hardcode date or currency formats. Use `Intl.DateTimeFormat` and `Intl.NumberFormat` with `i18n.language`.
@@ -209,9 +216,9 @@ Run this checklist mentally before touching any file:
 - No barrel (`index.ts`) re-exports for components. Import directly:
   ```ts
   // ✅ Correct
-  import Dashboard from './pages/Dashboard';
+  import Dashboard from "./pages/Dashboard";
   // ❌ Wrong
-  import { Dashboard } from './pages';
+  import { Dashboard } from "./pages";
   ```
 - Group imports: React → third-party → local, separated by blank lines.
 
@@ -257,14 +264,14 @@ Use `any[]` only for dynamic API responses. Add a comment explaining why.
 ```ts
 // ✅ ALWAYS parallel-fetch independent data (async-parallel rule)
 const [subsRes, receiptsRes, expensesRes] = await Promise.all([
-  api.get('/subscriptions'),
-  api.get('/receipts'),
-  api.get('/expenses'),
+  api.get("/subscriptions"),
+  api.get("/receipts"),
+  api.get("/expenses"),
 ]);
 
 // ❌ Sequential waterfall is forbidden for independent calls
-const subsRes = await api.get('/subscriptions');
-const receiptsRes = await api.get('/receipts'); // waits unnecessarily
+const subsRes = await api.get("/subscriptions");
+const receiptsRes = await api.get("/receipts"); // waits unnecessarily
 ```
 
 ### Memoization
@@ -272,8 +279,12 @@ const receiptsRes = await api.get('/receipts'); // waits unnecessarily
 ```ts
 // Currency/date formatters: always memo on i18n.language
 const fmt = useMemo(
-  () => new Intl.NumberFormat(i18n.language, { style: 'currency', currency: 'USD' }),
-  [i18n.language]
+  () =>
+    new Intl.NumberFormat(i18n.language, {
+      style: "currency",
+      currency: "USD",
+    }),
+  [i18n.language],
 );
 ```
 
@@ -351,10 +362,12 @@ Always define the Mongoose schema and Express route **before** building the fron
 // All controllers follow: req, res, try/catch, structured JSON response
 export const getExpenses = async (req: AuthRequest, res: Response) => {
   try {
-    const expenses = await Expense.find({ user: req.user!._id }).sort({ date: -1 });
+    const expenses = await Expense.find({ user: req.user!._id }).sort({
+      date: -1,
+    });
     res.json(expenses);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 };
 ```
@@ -381,16 +394,16 @@ cmd /c "npm run dev"
 
 ### Namespaces (current)
 
-| Namespace | Usage |
-|-----------|-------|
-| `nav.*` | Sidebar navigation labels |
-| `dashboard.*` | Dashboard page |
-| `receipts.*` | Receipts page |
-| `subscriptions.*` | Subscriptions page |
-| `expenses.*` | Expenses page |
-| `analytics.*` | Analytics page |
-| `settings.*` | Settings page |
-| `common.*` | Shared: loading, error, categories |
+| Namespace         | Usage                              |
+| ----------------- | ---------------------------------- |
+| `nav.*`           | Sidebar navigation labels          |
+| `dashboard.*`     | Dashboard page                     |
+| `receipts.*`      | Receipts page                      |
+| `subscriptions.*` | Subscriptions page                 |
+| `expenses.*`      | Expenses page                      |
+| `analytics.*`     | Analytics page                     |
+| `settings.*`      | Settings page                      |
+| `common.*`        | Shared: loading, error, categories |
 
 ### Rules
 
@@ -452,17 +465,17 @@ Refs: #issue (if applicable)
 
 ### Types
 
-| Type | When to use |
-|------|-------------|
-| `feat` | New feature or page |
-| `fix` | Bug fix |
+| Type       | When to use                              |
+| ---------- | ---------------------------------------- |
+| `feat`     | New feature or page                      |
+| `fix`      | Bug fix                                  |
 | `refactor` | Code restructure without behavior change |
-| `perf` | Performance improvement |
-| `style` | CSS/styling only, no logic change |
-| `docs` | Documentation only |
-| `chore` | Build config, dependencies, tooling |
-| `a11y` | Accessibility improvements |
-| `i18n` | Translation additions or changes |
+| `perf`     | Performance improvement                  |
+| `style`    | CSS/styling only, no logic change        |
+| `docs`     | Documentation only                       |
+| `chore`    | Build config, dependencies, tooling      |
+| `a11y`     | Accessibility improvements               |
+| `i18n`     | Translation additions or changes         |
 
 ### Scopes (use the most specific)
 
@@ -535,14 +548,14 @@ cmd /c "git push origin main"
 
 ### Commit granularity rules
 
-| Scope of change | Commits |
-|----------------|---------|
-| Bug fixes across multiple files | 1 commit with `fix(scope1,scope2)` |
-| Routing restructure | Separate commit `refactor(routing)` |
-| New feature (page + API) | 1 commit `feat(feature-name)` |
-| New landing section | Grouped with other landing in 1 `feat(landing)` |
-| i18n keys added for existing feature | Squash into the feature commit |
-| i18n keys added as standalone update | `i18n: add missing Vietnamese translations` |
+| Scope of change                      | Commits                                         |
+| ------------------------------------ | ----------------------------------------------- |
+| Bug fixes across multiple files      | 1 commit with `fix(scope1,scope2)`              |
+| Routing restructure                  | Separate commit `refactor(routing)`             |
+| New feature (page + API)             | 1 commit `feat(feature-name)`                   |
+| New landing section                  | Grouped with other landing in 1 `feat(landing)` |
+| i18n keys added for existing feature | Squash into the feature commit                  |
+| i18n keys added as standalone update | `i18n: add missing Vietnamese translations`     |
 
 **Never** mix unrelated changes in a single commit.
 
@@ -624,10 +637,14 @@ transition={{ duration: 0.5 }}
 
 ```ts
 // ❌ Reads localStorage on every render cycle
-const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+const [token, setToken] = useState<string | null>(
+  localStorage.getItem("token"),
+);
 
 // ✅ Lazy initializer — reads once on mount
-const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
+const [token, setToken] = useState<string | null>(() =>
+  localStorage.getItem("token"),
+);
 ```
 
 ### 4. npm on PowerShell is blocked
@@ -671,7 +688,9 @@ const isActive = (path: string) => location.pathname.startsWith(path);
 
 // ✅ Exact match for index, prefix for children
 const isActive = (path: string) =>
-  path === '/app' ? location.pathname === '/app' : location.pathname.startsWith(path);
+  path === "/app"
+    ? location.pathname === "/app"
+    : location.pathname.startsWith(path);
 ```
 
 ### 9. Static data inside components causes re-renders
