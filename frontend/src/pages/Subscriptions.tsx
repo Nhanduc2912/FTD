@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import api from "../api";
 import UpgradePrompt from "../components/UpgradePrompt";
+import { useCurrency } from '../context/CurrencyContext';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface ISubscription {
@@ -25,6 +26,7 @@ function toMonthly(cost: number, cycle: string): number {
 
 export default function Subscriptions() {
   const { t, i18n } = useTranslation();
+  const { formatCurrency } = useCurrency();
   const [subs, setSubs] = useState<ISubscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -38,14 +40,6 @@ export default function Subscriptions() {
     null,
   );
 
-  const fmt = useMemo(
-    () =>
-      new Intl.NumberFormat(i18n.language, {
-        style: "currency",
-        currency: "USD",
-      }),
-    [i18n.language],
-  );
   const dateFmt = useMemo(
     () => new Intl.DateTimeFormat(i18n.language, { dateStyle: "medium" }),
     [i18n.language],
@@ -131,7 +125,7 @@ export default function Subscriptions() {
             {subs.length} {t("nav.subscriptions").toLowerCase()}
           </span>
           <span className="font-bold tabular-nums">
-            {fmt.format(totalMonthly)}
+            {formatCurrency(totalMonthly)}
             <span className="text-text-muted font-normal text-sm">/mo</span>
           </span>
         </div>
@@ -208,7 +202,7 @@ export default function Subscriptions() {
               <SubscriptionCard
                 key={sub._id}
                 sub={sub}
-                fmt={fmt}
+                formatCurrency={formatCurrency}
                 dateFmt={dateFmt}
                 onCutRequest={(id) => setConfirmDelete(id)}
                 cancelLabel={t("subscriptions.cancelSubscription")}
@@ -468,13 +462,13 @@ function AddSubscriptionModal({
 // ── Subscription Card ─────────────────────────────────────────────────────────
 function SubscriptionCard({
   sub,
-  fmt,
+  formatCurrency,
   dateFmt,
   onCutRequest,
   cancelLabel,
 }: {
   sub: ISubscription;
-  fmt: Intl.NumberFormat;
+  formatCurrency: (value: number) => string;
   dateFmt: Intl.DateTimeFormat;
   onCutRequest: (id: string) => void;
   cancelLabel: string;
@@ -524,7 +518,7 @@ function SubscriptionCard({
       <div className="flex justify-between items-end mt-6">
         <div>
           <p className="text-3xl font-bold tabular-nums">
-            {fmt.format(sub.cost)}
+            {formatCurrency(sub.cost)}
           </p>
           <p
             className={`text-sm mt-1 flex items-center gap-1 ${

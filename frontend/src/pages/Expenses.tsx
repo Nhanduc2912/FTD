@@ -24,6 +24,7 @@ import {
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import api from "../api";
+import { useCurrency } from '../context/CurrencyContext';
 
 // ── Config ─────────────────────────────────────────────────────────────────
 const EXPENSE_CATEGORIES = [
@@ -98,6 +99,7 @@ interface PaginatedResponse<T> {
 // ── Component ──────────────────────────────────────────────────────────────
 export default function Expenses() {
   const { t, i18n } = useTranslation();
+  const { formatCurrency, currency } = useCurrency();
 
   const [expenses, setExpenses] = useState<IExpense[]>([]);
   const [summary, setSummary] = useState<{
@@ -123,22 +125,13 @@ export default function Expenses() {
     amount: "",
     category: "Food & Drink",
     date: new Date().toISOString().split("T")[0],
-    currency: "USD",
+    currency: currency,
   });
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
 
   const monthOptions = useMemo(() => getMonthOptions(), []);
 
-  const fmt = useMemo(
-    () =>
-      new Intl.NumberFormat(i18n.language, {
-        style: "currency",
-        currency: "USD",
-        maximumFractionDigits: 0,
-      }),
-    [i18n.language],
-  );
   const dateFmt = useMemo(
     () =>
       new Intl.DateTimeFormat(i18n.language, {
@@ -313,7 +306,7 @@ export default function Expenses() {
           <KpiCard
             icon={TrendingDown}
             label={t("expenses.totalThisMonth")}
-            value={fmt.format(summary.total)}
+            value={formatCurrency(summary.total)}
             sub={`${summary.count} ${t("expenses.transactions")}`}
             color="text-red-400"
             bg="bg-red-500/10 border-red-500/20"
@@ -322,14 +315,14 @@ export default function Expenses() {
             icon={TrendingDown}
             label={t("expenses.topCategory")}
             value={topCat ? topCat.name : "—"}
-            sub={topCat ? fmt.format(topCat.value) : "—"}
+            sub={topCat ? formatCurrency(topCat.value) : "—"}
             color="text-orange-400"
             bg="bg-orange-500/10 border-orange-500/20"
           />
           <KpiCard
             icon={TrendingDown}
             label={t("expenses.dailyAverage")}
-            value={fmt.format(dailyAvg)}
+            value={formatCurrency(dailyAvg)}
             sub={t("expenses.perDay")}
             color="text-primary"
             bg="bg-primary/10 border-primary/20"
@@ -377,7 +370,7 @@ export default function Expenses() {
                       <Cell key={i} fill={pieData[i].color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: any) => fmt.format(v)} />
+                  <Tooltip formatter={(v: any) => formatCurrency(v)} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="space-y-2 mt-3">
@@ -394,7 +387,7 @@ export default function Expenses() {
                       <span className="text-text-muted truncate">{d.name}</span>
                     </span>
                     <span className="font-semibold tabular-nums">
-                      {fmt.format(d.value)}
+                      {formatCurrency(d.value)}
                     </span>
                   </div>
                 ))}
@@ -489,7 +482,7 @@ export default function Expenses() {
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="font-bold tabular-nums text-red-400">
-                      −{fmt.format(exp.amount)}
+                      −{formatCurrency(exp.amount)}
                     </p>
                     <p className="text-xs text-text-muted">
                       {dateFmt.format(new Date(exp.date))}
@@ -564,10 +557,10 @@ export default function Expenses() {
                 tick={{ fill: "#888", fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(v) => fmt.format(v)}
+                tickFormatter={(v) => formatCurrency(v)}
               />
               <Tooltip
-                formatter={(v: any) => [fmt.format(v), t("expenses.title")]}
+                formatter={(v: any) => [formatCurrency(v), t("expenses.title")]}
                 contentStyle={{
                   background: "var(--color-surface)",
                   border: "1px solid var(--color-border)",

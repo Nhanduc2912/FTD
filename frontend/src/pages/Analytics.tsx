@@ -8,6 +8,7 @@ import { TrendingUp, DollarSign, ShieldCheck, AlertCircle, TrendingDown, Receipt
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import api from '../api';
+import { useCurrency } from '../context/CurrencyContext';
 
 // ── Config ─────────────────────────────────────────────────────────────────
 const PIE_COLORS = ['#6366f1', '#22d3ee', '#f59e0b', '#10b981', '#f43f5e'];
@@ -77,16 +78,14 @@ function CustomTooltip({ active, payload, label, fmt }: any) {
 // ── Main Component ──────────────────────────────────────────────────────────
 export default function Analytics() {
   const { t, i18n } = useTranslation();
+  const { formatCurrency, currency } = useCurrency();
   const [subs, setSubs] = useState<any[]>([]);
   const [receipts, setReceipts] = useState<any[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fmt = useMemo(() =>
-    new Intl.NumberFormat(i18n.language, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }),
-    [i18n.language]
-  );
+  
 
   useEffect(() => {
     const load = async () => {
@@ -256,9 +255,9 @@ export default function Analytics() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard title={t('analytics.monthlyBurnRate')} value={fmt.format(totalMonthly)} icon={DollarSign} desc={t('analytics.allSubscriptions')} />
-        <KpiCard title={t('analytics.yearlyProjection')} value={fmt.format(totalMonthly * 12)} icon={TrendingUp} desc={t('analytics.basedOnCurrent')} />
-        <KpiCard title={t('analytics.activeWarrantyValue')} value={fmt.format(totalWarrantyValue)} icon={ShieldCheck} desc={t('analytics.validWarranties')} />
+        <KpiCard title={t('analytics.monthlyBurnRate')} value={formatCurrency(totalMonthly)} icon={DollarSign} desc={t('analytics.allSubscriptions')} />
+        <KpiCard title={t('analytics.yearlyProjection')} value={formatCurrency(totalMonthly * 12)} icon={TrendingUp} desc={t('analytics.basedOnCurrent')} />
+        <KpiCard title={t('analytics.activeWarrantyValue')} value={formatCurrency(totalWarrantyValue)} icon={ShieldCheck} desc={t('analytics.validWarranties')} />
         <KpiCard title={t('analytics.warrantiesExpiring')} value={expiringCount.toString()} icon={AlertCircle} desc={t('analytics.within30Days')} highlight={expiringCount > 0} />
       </div>
 
@@ -267,7 +266,7 @@ export default function Analytics() {
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 rounded-lg bg-red-500/10 text-red-400"><TrendingDown size={20} /></div>
           <h2 className="text-lg font-semibold">{t('expenses.totalThisMonth')}</h2>
-          <span className="ml-auto text-3xl font-black text-red-400 tabular-nums">{fmt.format(totalExpenseThisMonth)}</span>
+          <span className="ml-auto text-3xl font-black text-red-400 tabular-nums">{formatCurrency(totalExpenseThisMonth)}</span>
         </div>
         <p className="text-sm text-text-muted pl-11">{expenses.length} {t('expenses.transactions')}</p>
       </motion.div>
@@ -282,8 +281,8 @@ export default function Analytics() {
             <BarChart data={monthlyForecast} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="month" tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
-              <Tooltip content={<CustomTooltip fmt={fmt} />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
+              <YAxis tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={v => `${currency === 'VND' ? '₫' : '$'}${v}`} />
+              <Tooltip content={<CustomTooltip formatCurrency={formatCurrency} />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
               <Bar dataKey={FORECAST_KEY} fill="#6366f1" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -300,8 +299,8 @@ export default function Analytics() {
             <BarChart data={expenseTrend} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="month" tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
-              <Tooltip content={<CustomTooltip fmt={fmt} />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
+              <YAxis tick={{ fill: '#888', fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={v => `${currency === 'VND' ? '₫' : '$'}${v}`} />
+              <Tooltip content={<CustomTooltip formatCurrency={formatCurrency} />} cursor={{ fill: 'rgba(255,255,255,0.04)' }} />
               <Bar dataKey={EXPENSE_KEY} fill="#f43f5e" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -341,7 +340,7 @@ export default function Analytics() {
                     <Cell key={i} fill={d.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v: any) => [fmt.format(v as number), '']} />
+                <Tooltip formatter={(v: any) => [formatCurrency(v as number), '']} />
                 <Legend wrapperStyle={{ fontSize: '13px', color: '#aaa' }} />
               </PieChart>
             </ResponsiveContainer>
@@ -388,13 +387,13 @@ export default function Analytics() {
                 <tr key={s._id} className="border-b border-border hover:bg-surface-hover/30 transition-colors">
                   <td className="p-4 font-medium">{s.serviceName}</td>
                   <td className="p-4 text-text-muted capitalize">{String(t(`subscriptions.${s.billingCycle}`, s.billingCycle))}</td>
-                  <td className="p-4 text-right tabular-nums">{fmt.format(s.cost)}</td>
-                  <td className="p-4 text-right tabular-nums text-primary font-semibold">{fmt.format(toMonthly(s.cost, s.billingCycle))}</td>
+                  <td className="p-4 text-right tabular-nums">{formatCurrency(s.cost)}</td>
+                  <td className="p-4 text-right tabular-nums text-primary font-semibold">{formatCurrency(toMonthly(s.cost, s.billingCycle))}</td>
                 </tr>
               ))}
               <tr className="bg-primary/5">
                 <td colSpan={3} className="p-4 font-bold text-right">{t('analytics.totalMonthly')}</td>
-                <td className="p-4 text-right font-black text-primary tabular-nums">{fmt.format(totalMonthly)}</td>
+                <td className="p-4 text-right font-black text-primary tabular-nums">{formatCurrency(totalMonthly)}</td>
               </tr>
             </tbody>
           </table>

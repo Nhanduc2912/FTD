@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import api from "../api";
 import UpgradePrompt from "../components/UpgradePrompt";
+import { useCurrency } from '../context/CurrencyContext';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface IReceipt {
@@ -59,6 +60,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function Receipts() {
   const { t, i18n } = useTranslation();
+  const { formatCurrency } = useCurrency();
   const [receipts, setReceipts] = useState<IReceipt[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState("");
@@ -84,14 +86,6 @@ export default function Receipts() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Locale-aware formatters
-  const fmt = useMemo(
-    () =>
-      new Intl.NumberFormat(i18n.language, {
-        style: "currency",
-        currency: "USD",
-      }),
-    [i18n.language],
-  );
   const dateFmt = useMemo(
     () =>
       new Intl.DateTimeFormat(i18n.language, {
@@ -417,7 +411,7 @@ export default function Receipts() {
                       {dateFmt.format(new Date(receipt.purchaseDate))}
                     </td>
                     <td className="p-4 font-semibold tabular-nums">
-                      {fmt.format(receipt.totalAmount)}
+                      {formatCurrency(receipt.totalAmount)}
                     </td>
                     <td className="p-4">
                       <span

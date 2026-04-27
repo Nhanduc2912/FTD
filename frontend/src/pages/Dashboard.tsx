@@ -5,11 +5,13 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 import WelcomeBanner from '../components/WelcomeBanner';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
+  const { formatCurrency } = useCurrency();
   const [stats, setStats] = useState({
     totalSubs: 0, subsCost: 0,
     totalReceipts: 0, receiptsAmount: 0,
@@ -24,11 +26,6 @@ export default function Dashboard() {
     () => localStorage.getItem('ftd_welcome_dismissed') !== 'true'
   );
 
-  // locale-aware formatters
-  const currFmt = useMemo(
-    () => new Intl.NumberFormat(i18n.language, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }),
-    [i18n.language]
-  );
   const dateFmt = useMemo(
     () => new Intl.DateTimeFormat(i18n.language, { month: 'short', day: 'numeric' }),
     [i18n.language]
@@ -138,7 +135,7 @@ export default function Dashboard() {
         <StatCard
           title={t('dashboard.totalReceipts')}
           value={stats.totalReceipts.toString()}
-          amount={currFmt.format(stats.receiptsAmount)}
+          amount={formatCurrency(stats.receiptsAmount)}
           icon={Receipt}
           trend={stats.expiringReceipts > 0 ? t('dashboard.warrantiesExpiring', { count: stats.expiringReceipts }) : t('dashboard.allClear')}
         />
@@ -152,7 +149,7 @@ export default function Dashboard() {
         />
         <StatCard
           title={t('expenses.totalThisMonth')}
-          value={currFmt.format(stats.totalExpenses)}
+          value={formatCurrency(stats.totalExpenses)}
           amount={t('expenses.transactions')}
           icon={TrendingDown}
           trend={t('nav.expenses')}
@@ -178,7 +175,7 @@ export default function Dashboard() {
                 const diff = Math.ceil((new Date(sub.nextBillingDate).getTime() - new Date().getTime()) / 86400000);
                 const label = diff === 0 ? t('dashboard.renewsToday') : diff === 1 ? t('dashboard.renewsTomorrow') : t('dashboard.renewsInDays', { count: diff });
                 return (
-                  <RenewalItem key={sub._id} name={sub.serviceName} date={label} amount={currFmt.format(sub.cost)} urgent={diff <= 3} />
+                  <RenewalItem key={sub._id} name={sub.serviceName} date={label} amount={formatCurrency(sub.cost)} urgent={diff <= 3} />
                 );
               })
             )}
@@ -203,7 +200,7 @@ export default function Dashboard() {
                   store={r.storeName}
                   item={r.itemName || t('receipts.noItemSpecified')}
                   date={dateFmt.format(new Date(r.purchaseDate))}
-                  amount={currFmt.format(r.totalAmount)}
+                  amount={formatCurrency(r.totalAmount)}
                 />
               ))
             )}

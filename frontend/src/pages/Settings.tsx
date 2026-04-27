@@ -6,10 +6,16 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 
 const LANGUAGES = [
   { code: 'en', label: 'English',     flag: '🇺🇸' },
   { code: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' },
+];
+
+const CURRENCIES = [
+  { code: 'USD', label: 'USD ($)', symbol: '$' },
+  { code: 'VND', label: 'VND (₫)', symbol: '₫' },
 ];
 
 // Free plan limits (mirrors backend planLimits.ts)
@@ -18,6 +24,7 @@ const FREE_SUB_LIMIT     = 10;
 
 export default function Settings() {
   const { user, login, token, logout } = useAuth();
+  const { currency, setCurrency } = useCurrency();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
@@ -168,30 +175,66 @@ export default function Settings() {
           <h2 className="text-lg font-semibold">{t('settings.language')}</h2>
         </div>
         <div className="p-5">
-          <p className="text-sm text-text-muted mb-4">{t('settings.languageLabel')}</p>
-          <div className="grid grid-cols-2 gap-3">
-            {LANGUAGES.map(lang => (
-              <button
-                key={lang.code}
-                id={`lang-${lang.code}`}
-                onClick={() => handleLanguageChange(lang.code)}
-                aria-pressed={currentLang === lang.code}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors font-medium text-left ${
-                  currentLang === lang.code
-                    ? 'border-primary bg-primary/10 text-white'
-                    : 'border-border bg-surface-hover text-text-muted hover:border-primary/40 hover:text-white'
-                }`}
-              >
-                <span className="text-2xl" aria-hidden="true">{lang.flag}</span>
-                <span>{lang.label}</span>
-                {currentLang === lang.code && (
-                  <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
-                    className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs">
-                    ✓
-                  </motion.span>
-                )}
-              </button>
-            ))}
+          {/* Language Selection */}
+          <div className="mb-6">
+            <p className="text-sm text-text-muted mb-4">{t('settings.languageLabel')}</p>
+            <div className="grid grid-cols-2 gap-3">
+              {LANGUAGES.map(lang => (
+                <button
+                  key={lang.code}
+                  id={`lang-${lang.code}`}
+                  onClick={() => handleLanguageChange(lang.code)}
+                  aria-pressed={currentLang === lang.code}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors font-medium text-left ${
+                    currentLang === lang.code
+                      ? 'border-primary bg-primary/10 text-white'
+                      : 'border-border bg-surface-hover text-text-muted hover:border-primary/40 hover:text-white'
+                  }`}
+                >
+                  <span className="text-2xl" aria-hidden="true">{lang.flag}</span>
+                  <span>{lang.label}</span>
+                  {currentLang === lang.code && (
+                    <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
+                      className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs">
+                      ✓
+                    </motion.span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <hr className="border-border mb-6" />
+
+          {/* Currency Selection */}
+          <div>
+            <p className="text-sm text-text-muted mb-4">{t('settings.currency')}</p>
+            <div className="grid grid-cols-2 gap-3">
+              {CURRENCIES.map(curr => (
+                <button
+                  key={curr.code}
+                  id={`curr-${curr.code}`}
+                  onClick={() => setCurrency(curr.code)}
+                  aria-pressed={currency === curr.code}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors font-medium text-left ${
+                    currency === curr.code
+                      ? 'border-primary bg-primary/10 text-white'
+                      : 'border-border bg-surface-hover text-text-muted hover:border-primary/40 hover:text-white'
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${currency === curr.code ? 'bg-primary text-white' : 'bg-surface border border-border text-text-muted'}`} aria-hidden="true">
+                    {curr.symbol}
+                  </div>
+                  <span>{curr.label}</span>
+                  {currency === curr.code && (
+                    <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
+                      className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs">
+                      ✓
+                    </motion.span>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </motion.section>
