@@ -58,7 +58,10 @@ export default function Settings() {
   const [pwStatus, setPwStatus]       = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   const [nameSaving, setNameSaving]   = useState(false);
   const [pwSaving, setPwSaving]       = useState(false);
-  const [currentLang, setCurrentLang] = useState(i18n.language.startsWith('vi') ? 'vi' : 'en');
+  const [currentLang, setCurrentLang] = useState(() => {
+    const baseLang = i18n.language ? i18n.language.split('-')[0] : 'en';
+    return LANGUAGES.some(l => l.code === baseLang) ? baseLang : 'en';
+  });
   const [showPw, setShowPw]           = useState({ current: false, new: false, confirm: false });
 
   // Danger zone
@@ -101,7 +104,8 @@ export default function Settings() {
     setCurrentLang(langCode);
     i18n.changeLanguage(langCode);
     localStorage.setItem('ftd_language', langCode);
-    toast.success(langCode === 'vi' ? 'Đã chuyển sang Tiếng Việt' : 'Switched to English');
+    const langLabel = LANGUAGES.find(l => l.code === langCode)?.label || langCode;
+    toast.success(`Language switched to ${langLabel}`);
   };
 
   const handleDeleteAccount = async (e: React.FormEvent) => {
