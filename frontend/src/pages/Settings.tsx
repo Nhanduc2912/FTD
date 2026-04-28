@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Save, KeyRound, Shield, User, AlertCircle, CheckCircle, Globe, Zap, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Save, KeyRound, Shield, User, AlertCircle, CheckCircle, Globe, Zap, Trash2, Eye, EyeOff, Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
+import { useTheme } from '../context/ThemeContext';
 
 const LANGUAGES = [
   { code: 'en', label: 'English',     flag: '🇺🇸' },
@@ -49,6 +50,7 @@ const FREE_SUB_LIMIT     = 10;
 export default function Settings() {
   const { user, login, token, logout } = useAuth();
   const { currency, setCurrency } = useCurrency();
+  const { theme, setTheme } = useTheme();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
@@ -235,7 +237,7 @@ export default function Settings() {
           <hr className="border-border mb-6" />
 
           {/* Currency Selection */}
-          <div>
+          <div className="mb-6">
             <p className="text-sm text-text-muted mb-4">{t('settings.currency')}</p>
             <div className="grid grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-1">
               {CURRENCIES.map(curr => (
@@ -262,6 +264,54 @@ export default function Settings() {
                   )}
                 </button>
               ))}
+            </div>
+          </div>
+
+          <hr className="border-border mb-6" />
+
+          {/* Theme Selection */}
+          <div>
+            <p className="text-sm text-text-muted mb-4">{t('settings.theme', 'App Theme')}</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setTheme('light')}
+                aria-pressed={theme === 'light'}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors font-medium text-left ${
+                  theme === 'light'
+                    ? 'border-primary bg-primary/10 text-white'
+                    : 'border-border bg-surface-hover text-text-muted hover:border-primary/40 hover:text-white'
+                }`}
+              >
+                <div className={`p-2 rounded-lg ${theme === 'light' ? 'bg-primary/20 text-white' : 'bg-surface border border-border text-text-muted'}`}>
+                  <Sun size={18} />
+                </div>
+                <span>{t('settings.light', 'Light')}</span>
+                {theme === 'light' && (
+                  <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs">
+                    ✓
+                  </motion.span>
+                )}
+              </button>
+
+              <button
+                onClick={() => setTheme('dark')}
+                aria-pressed={theme === 'dark'}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors font-medium text-left ${
+                  theme === 'dark'
+                    ? 'border-primary bg-primary/10 text-white'
+                    : 'border-border bg-surface-hover text-text-muted hover:border-primary/40 hover:text-white'
+                }`}
+              >
+                <div className={`p-2 rounded-lg ${theme === 'dark' ? 'bg-primary/20 text-white' : 'bg-surface border border-border text-text-muted'}`}>
+                  <Moon size={18} />
+                </div>
+                <span>{t('settings.dark', 'Dark')}</span>
+                {theme === 'dark' && (
+                  <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="ml-auto w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white text-xs">
+                    ✓
+                  </motion.span>
+                )}
+              </button>
             </div>
           </div>
         </div>

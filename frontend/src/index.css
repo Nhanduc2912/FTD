@@ -1,21 +1,42 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #aa3bff;
-  --color-primary-dark: #8b2bcc;
-  --color-bg: #08060d;
-  --color-surface: #16171d;
-  --color-surface-hover: #1f2028;
-  --color-text: #f3f4f6;
-  --color-text-muted: #9ca3af;
-  --color-border: #2e303a;
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border);
 
   --font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* ── Base ──────────────────────────────────────────────────── */
 :root {
+  /* Dark mode default */
   color-scheme: dark;
+  --primary: #aa3bff;
+  --primary-dark: #8b2bcc;
+  --bg: #08060d;
+  --surface: #16171d;
+  --surface-hover: #1f2028;
+  --text: #f3f4f6;
+  --text-muted: #9ca3af;
+  --border: #2e303a;
+}
+
+:root.light {
+  color-scheme: light;
+  --primary: #aa3bff;
+  --primary-dark: #8b2bcc;
+  --bg: #f9fafb;
+  --surface: #ffffff;
+  --surface-hover: #f3f4f6;
+  --text: #111827;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
 }
 
 html {

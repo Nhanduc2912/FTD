@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   Receipt,
@@ -11,8 +12,11 @@ import {
   Star,
   ArrowRight,
   CheckCircle2,
+  Send,
+  Check
 } from "lucide-react";
 import Hero3DVisual from "../../components/Hero3DVisual";
+import { triggerConfetti } from "../../utils/confetti";
 
 // ── Static data (hoisted outside component – rendering-hoist-jsx) ───────────
 const FEATURES = [
@@ -116,6 +120,20 @@ const fadeUp = {
 
 // ── Component ────────────────────────────────────────────────────────────────
 export default function LandingHome() {
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setSubscribed(true);
+    triggerConfetti();
+    setTimeout(() => {
+      setSubscribed(false);
+      setEmail("");
+    }, 3000);
+  };
+
   return (
     <div className="overflow-x-hidden">
       {/* ── Hero ─────────────────────────────────────────────── */}
@@ -483,26 +501,64 @@ export default function LandingHome() {
             aria-hidden="true"
           />
           <h2 className="text-4xl font-black mb-4 relative z-10 text-wrap-balance">
-            Ready to Take Control?
+            Stay in the Loop
           </h2>
           <p className="text-text-muted text-lg mb-8 max-w-xl mx-auto relative z-10">
-            Join 12,000+ users who already have complete clarity on their
-            finances.
+            Join 12,000+ users who already have complete clarity on their finances. Get early access to new features.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
-            <Link
-              to="/register"
-              className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white font-bold px-8 py-4 rounded-2xl shadow-xl shadow-primary/30 transition-colors text-lg"
-            >
-              Create Free Account <ChevronRight size={20} aria-hidden="true" />
-            </Link>
-            <Link
-              to="/help"
-              className="inline-flex items-center justify-center gap-2 text-text-muted hover:text-white border border-border hover:border-primary/40 px-8 py-4 rounded-2xl transition-[color,border-color] text-lg"
-            >
-              Read the Docs
-            </Link>
+
+          <div className="flex justify-center relative z-10">
+            <form onSubmit={handleSubscribe} className="relative w-full max-w-md">
+              <input
+                type="email"
+                placeholder="Enter your email address"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={subscribed}
+                className="w-full bg-surface border border-border rounded-2xl px-6 py-4 pr-16 text-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all disabled:opacity-50"
+              />
+              <div className="absolute right-2 top-2 bottom-2 aspect-square">
+                <AnimatePresence mode="wait">
+                  {!subscribed ? (
+                    <motion.button
+                      key="send"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      type="submit"
+                      className="w-full h-full bg-primary hover:bg-primary-dark text-white rounded-xl flex items-center justify-center transition-colors"
+                    >
+                      <Send size={20} />
+                    </motion.button>
+                  ) : (
+                    <motion.div
+                      key="check"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="w-full h-full bg-green-500 text-white rounded-xl flex items-center justify-center"
+                    >
+                      <Check size={20} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </form>
           </div>
+          
+          <AnimatePresence>
+            {subscribed && (
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mt-4 text-green-400 font-medium relative z-10"
+              >
+                You're on the list! Keep an eye on your inbox.
+              </motion.p>
+            )}
+          </AnimatePresence>
         </motion.div>
       </section>
     </div>
