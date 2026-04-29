@@ -132,7 +132,12 @@
     "receiptFrom": "Receipt from",
     "dropZoneLabel": "Click or drag a receipt image here",
     "dropZoneMain": "Click to browse or drag & drop",
-    "dropZoneSub": "JPEG, PNG, WebP, PDF — max 5 MB"
+    "dropZoneSub": "JPEG, PNG, WebP, PDF — max 5 MB",
+    "quickCaptureTitle": "Quick Capture",
+    "quickCaptureDesc": "Snap a photo of your receipt to save it instantly.",
+    "openCamera": "Open Camera",
+    "pwaInstall": "Install App",
+    "pwaInstallDesc": "Install FTD on your home screen for fast access."
   },
   "subscriptions": {
     "title": "Subscription Guillotine",
@@ -315,6 +320,8 @@
     "prevPage": "Previous page",
     "nextPage": "Next page",
     "pageOf": "Page {{page}} of {{total}}",
+    "retake": "Retake",
+    "upload": "Upload",
     "close": "Close",
     "error": "Something went wrong. Please try again.",
     "loading": "Loading…",

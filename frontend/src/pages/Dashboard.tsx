@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { CreditCard, Receipt, AlertCircle, ArrowRight, TrendingDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -214,38 +214,91 @@ export default function Dashboard() {
 // ── Sub-components (hoisted outside, rerender-no-inline-components) ──────────
 
 function StatCard({ title, value, amount, icon: Icon, trend, highlight, color, bg }: any) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const springConfig = { damping: 20, stiffness: 100, mass: 0.5 };
+  const mouseX = useSpring(x, springConfig);
+  const mouseY = useSpring(y, springConfig);
+  const rotateX = useTransform(mouseY, [-0.5, 0.5], [10, -10]);
+  const rotateY = useTransform(mouseX, [-0.5, 0.5], [-10, 10]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseXPos = e.clientX - rect.left;
+    const mouseYPos = e.clientY - rect.top;
+    x.set(mouseXPos / width - 0.5);
+    y.set(mouseYPos / height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ y: -4 }}
-      className={`p-6 rounded-2xl border relative overflow-hidden ${
-        bg ?? (highlight ? 'bg-primary/10 border-primary/30' : 'glass border-border')
-      }`}
-    >
-      <div className="flex justify-between items-start mb-4">
-        <div className="min-w-0">
-          <p className="text-text-muted font-medium mb-1 truncate">{title}</p>
-          <h3 className={`text-3xl font-bold tabular-nums ${color ?? ''}`}>{value}</h3>
+    <div style={{ perspective: 1000 }} className="h-full group cursor-pointer z-10 hover:z-50 relative">
+      <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        style={{
+          rotateX,
+          rotateY,
+          transformStyle: "preserve-3d",
+        }}
+        className={`p-6 rounded-2xl border relative h-full shadow-lg transition-shadow duration-300 group-hover:shadow-2xl group-hover:shadow-primary/20 ${
+          bg ?? (highlight ? 'bg-primary/10 border-primary/30' : 'glass border-border')
+        }`}
+      >
+        {/* Inner 3D Content */}
+        <div style={{ transform: "translateZ(30px)", transformStyle: "preserve-3d" }}>
+          <div className="flex justify-between items-start mb-4">
+            <div className="min-w-0">
+              <p className="text-text-muted font-medium mb-1 truncate">{title}</p>
+              <h3 className={`text-3xl font-bold tabular-nums drop-shadow-sm ${color ?? ''}`}>{value}</h3>
+            </div>
+            <div className={`p-3 rounded-xl flex-shrink-0 shadow-inner ${highlight ? 'bg-primary text-white shadow-primary/40' : 'bg-surface-hover text-primary'}`}>
+              <Icon size={24} aria-hidden="true" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-text-muted" style={{ transform: "translateZ(10px)" }}>
+            <span className="font-medium text-text truncate">{amount}</span>
+            <span aria-hidden="true">•</span>
+            <span className="truncate">{trend}</span>
+          </div>
         </div>
-        <div className={`p-3 rounded-xl flex-shrink-0 ${highlight ? 'bg-primary text-white' : 'bg-surface-hover text-primary'}`}>
-          <Icon size={24} aria-hidden="true" />
-        </div>
-      </div>
-      <div className="flex items-center gap-2 text-sm text-text-muted">
-        <span className="font-medium text-text truncate">{amount}</span>
-        <span aria-hidden="true">•</span>
-        <span className="truncate">{trend}</span>
-      </div>
-    </motion.div>
+
+        {/* Dynamic Glare Effect */}
+        <motion.div
+          className="absolute inset-0 pointer-events-none mix-blend-overlay rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden"
+          style={{
+            background: useTransform(
+              [x, y],
+              ([latestX, latestY]: number[]) => {
+                const posX = (latestX + 0.5) * 100;
+                const posY = (latestY + 0.5) * 100;
+                return `radial-gradient(circle at ${posX}% ${posY}%, rgba(255,255,255,0.15) 0%, transparent 50%)`;
+              }
+            ),
+          }}
+        />
+      </motion.div>
+    </div>
   );
 }
 
 function RenewalItem({ name, date, amount, urgent }: any) {
   return (
-    <div className={`flex justify-between items-center p-3 rounded-xl hover:bg-surface-hover transition-colors ${urgent ? 'bg-red-500/5' : ''}`}>
+    <motion.div
+      whileHover={{ scale: 1.02, x: 4 }}
+      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      className={`flex justify-between items-center p-3 rounded-xl cursor-pointer hover:bg-surface-hover transition-colors ${urgent ? 'bg-red-500/5' : ''}`}
+    >
       <div className="flex items-center gap-3 min-w-0">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold flex-shrink-0 ${urgent ? 'bg-red-500/20 text-red-400' : 'bg-primary/20 text-primary'}`} aria-hidden="true">
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold flex-shrink-0 shadow-sm ${urgent ? 'bg-red-500/20 text-red-400' : 'bg-primary/20 text-primary'}`} aria-hidden="true">
           {name?.[0]?.toUpperCase() ?? '?'}
         </div>
         <div className="min-w-0">
@@ -254,7 +307,7 @@ function RenewalItem({ name, date, amount, urgent }: any) {
         </div>
       </div>
       <div className="font-semibold tabular-nums flex-shrink-0 ml-2">{amount}</div>
-    </div>
+    </motion.div>
   );
 }
 

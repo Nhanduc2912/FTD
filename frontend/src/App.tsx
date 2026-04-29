@@ -25,6 +25,7 @@ const Analytics     = lazy(() => import('./pages/Analytics'));
 const Expenses      = lazy(() => import('./pages/Expenses'));
 const Settings      = lazy(() => import('./pages/Settings'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const QuickCapture   = lazy(() => import('./pages/QuickCapture'));
 
 function PageLoader() {
   return (
@@ -59,9 +60,11 @@ function App() {
         <Route path="subscriptions"   element={<Suspense fallback={<PageLoader />}><Subscriptions /></Suspense>} />
         <Route path="analytics"       element={<Suspense fallback={<PageLoader />}><Analytics /></Suspense>} />
         <Route path="expenses"        element={<Suspense fallback={<PageLoader />}><Expenses /></Suspense>} />
-        <Route path="settings"        element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
+        <Route path="settings"           element={<Suspense fallback={<PageLoader />}><Settings /></Suspense>} />
         <Route path="admin"           element={<Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>} />
-      </Route>
+        <Route path="quick-capture"   element={<Suspense fallback={<PageLoader />}><QuickCapture /></Suspense>} />
+        </Route>
+
 
       {/* Legacy redirect: old routes → new /app prefix */}
       <Route path="/dashboard"      element={<Navigate to="/app" replace />} />

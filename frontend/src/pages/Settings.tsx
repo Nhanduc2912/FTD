@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Save, KeyRound, Shield, User, AlertCircle, CheckCircle, Globe, Zap, Trash2, Eye, EyeOff, Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -71,6 +71,25 @@ export default function Settings() {
   const [deletePassword, setDeletePassword]   = useState('');
   const [showDeletePw, setShowDeletePw]       = useState(false);
   const [deleting, setDeleting]               = useState(false);
+  const [deferredPrompt, setDeferredPrompt]   = useState<any>(null);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   const handleNameSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -193,6 +212,26 @@ export default function Settings() {
           )}
         </div>
       </motion.section>
+
+      {/* ── App Installation ────────────────────────────────────────────── */}
+      {deferredPrompt && (
+        <motion.section initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}
+          className="glass border border-primary/30 rounded-2xl overflow-hidden bg-primary/5">
+          <div className="flex items-center gap-3 p-5 border-b border-primary/20">
+            <div className="p-2 rounded-lg bg-primary/20 text-primary"><Zap size={20} aria-hidden="true" /></div>
+            <h2 className="text-lg font-semibold">{t('receipts.pwaInstall', 'Install App')}</h2>
+          </div>
+          <div className="p-5">
+            <p className="text-sm text-text-muted mb-4">{t('receipts.pwaInstallDesc', 'Install FTD on your home screen for fast access and mobile features.')}</p>
+            <button
+              onClick={handleInstallClick}
+              className="w-full py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20"
+            >
+              {t('receipts.pwaInstall', 'Install App')}
+            </button>
+          </div>
+        </motion.section>
+      )}
 
       </div>{/* end col-left */}
 

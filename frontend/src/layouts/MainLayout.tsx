@@ -203,6 +203,17 @@ export default function MainLayout() {
           <div className="relative z-10">
             <Outlet />
           </div>
+
+          {/* ── Mobile FAB ──────────────────────────────────── */}
+          <div className="lg:hidden fixed bottom-6 right-6 z-20">
+            <Link
+              to="/app/quick-capture"
+              aria-label={t('receipts.quickCaptureTitle')}
+              className="flex items-center justify-center w-14 h-14 bg-primary text-white rounded-full shadow-2xl shadow-primary/40 active:scale-90 transition-transform"
+            >
+              <Receipt size={24} />
+            </Link>
+          </div>
         </main>
       </div>
     </div>
